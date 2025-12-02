@@ -81,7 +81,7 @@ Below is a simple workflow using the built-in datasets.
 library(projectLSA)
 
 # Launch the GUI
-run_app()
+run_projectLSA()
 ```
 
 Once inside the GUI:
