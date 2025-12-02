@@ -92,6 +92,8 @@ This opens the full Shiny application, including all LSA modules, data upload, b
 
 ```
 ![LPA interface](man/figures/lpa_example.png)
+![LPA interface](man/figures/lpa_example2.png)
+
 ```
 
 ---
