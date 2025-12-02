@@ -88,8 +88,6 @@ This opens the full Shiny application, including all LSA modules, data upload, b
 
 ## Example Screenshots
 
-*(Place images inside `man/figures/` if needed. Example placeholder:)*
-
 ```
 ![LPA interface](man/figures/lpa_example.png)
 ![LPA interface](man/figures/lpa_example2.png)
