@@ -37,7 +37,7 @@ library(projectLSA)
 
 ```r
 library(projectLSA)
-run_app()
+run_projectLSA()
 ```
 
 This will open the full Shiny interface, where you can upload data, choose an analysis module, and generate results.
