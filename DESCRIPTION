@@ -61,7 +61,6 @@ Imports:
     tidyLPA,
     viridisLite
 Suggests:
-    devtools,
     knitr,
     pkgdown,
     rmarkdown
