@@ -79,22 +79,45 @@ server_lpa <- function(input, output, session) {
     df <- data_user() %>% 
       dplyr::select(input$selected_vars)
     #numeric_cols <- which(sapply(df, function(x) is.numeric(x)))
-    numeric_cols <- which(vapply(df, function(x) is.numeric(x) && length(x) > 0, logical(1)))
+    #numeric_cols <- which(vapply(df, function(x) is.numeric(x) && length(x) > 0, logical(1)))
 
-    datatable(df,
-              extensions = 'Buttons',
-              options = list(dom='Brtp',scrollX = TRUE, pageLength = 25,  
-                             buttons = list(
-                               list(extend = 'csv',
-                                    text = 'Export CSV',
-                                    filename = 'Data LPA'
-                               ),
-                               list(extend = 'excel',
-                                    text = 'Export Excel',
-                                    filename = 'Data LPA'
-                               ))),
-      rownames = T) %>% 
-      formatRound(columns = numeric_cols, digits = 2)
+#    datatable(df,
+ #             extensions = 'Buttons',
+  #            options = list(dom='Brtp',scrollX = TRUE, pageLength = 25,  
+   #                          buttons = list(
+    #                           list(extend = 'csv',
+     #                               text = 'Export CSV',
+      #                              filename = 'Data LPA'
+       #                        ),
+        #                       list(extend = 'excel',
+         #                           text = 'Export Excel',
+          #                          filename = 'Data LPA'
+           #                    ))),
+   #   rownames = T) %>% 
+    #  formatRound(columns = numeric_cols, digits = 2)
+  numeric_cols <- which(vapply(df, is.numeric, logical(1)))
+
+dt <- datatable(
+  df,
+  extensions = 'Buttons',
+  options = list(
+    dom = 'Brtp',
+    scrollX = TRUE,
+    pageLength = 25,
+    buttons = list(
+      list(extend = 'csv', text = 'Export CSV', filename = 'Data LPA'),
+      list(extend = 'excel', text = 'Export Excel', filename = 'Data LPA')
+    )
+  ),
+  rownames = TRUE
+)
+
+# Hanya formatRound jika benar-benar ada kolom numeric
+if (length(numeric_cols) > 0) {
+  dt <- dt %>% formatRound(columns = numeric_cols, digits = 2)
+}
+
+dt
   })
 
   # --- Jalankan LPA ----
