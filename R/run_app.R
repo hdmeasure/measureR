@@ -4,7 +4,7 @@
 #'
 #' @return Launches the Shiny application in the default web browser.
 #' @export
-run_projectLSA <- function() {
+run_app <- function() {
   app_dir <- system.file("app", package = "projectLSA")
   if (app_dir == "") {
     stop("Could not find Shiny app. Try reinstalling the projectLSA package.", call. = FALSE)
