@@ -33,7 +33,7 @@ install.packages("projectLSA")
 
 ``` r
 library(projectLSA)
-run_app()
+run_projectLSA()
 ```
 
 This opens the full Shiny application, including all LSA modules, data
