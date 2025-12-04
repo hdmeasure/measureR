@@ -1,12 +1,14 @@
-#' projectLSA: Latent Structure Analysis Toolkit
+#' Latent Structure Analysis Toolkit
 #'
-#' Provides an interactive Shiny application for performing Latent Profile Analysis (LPA),
-#' Latent Class Analysis (LCA), Latent Trait Analysis (LTA/IRT), Exploratory Factor Analysis (EFA),
-#' and Confirmatory Factor Analysis (CFA) — all through a GUI without requiring users to write code.
+#' Provides an interactive Shiny-based environment for performing Latent Profile
+#' Analysis (LPA), Latent Class Analysis (LCA), Latent Trait Analysis (LTA; IRT),
+#' Exploratory Factor Analysis (EFA), Confirmatory Factor Analysis (CFA), and
+#' Structural Equation Modeling (SEM). All analyses are conducted through a
+#' graphical user interface without requiring users to write code.
 #'
 #' @section Main Function:
-#' \code{\link{run_projectLSA}} launches the full GUI.
+#' The primary entry point is \code{\link{run_projectLSA}}, which launches the
+#' full interactive application.
 #'
-#' @docType package
-#' @name projectLSA
-NULL
+#' @keywords internal
+"_PACKAGE"
