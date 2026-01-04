@@ -100,24 +100,16 @@ upload, built-in datasets, interactive plots, and reporting features.
 
 ### LPA (Latent Profile Analysis)
 
-![LPA1](man/figures/LPA1.png) ![LPA2](man/figures/LPA2.png)
-![LPA3](man/figures/LPA3.png) ![LPA4](man/figures/LPA4.png)
-![LPA5](man/figures/LPA5.png)
+![LPA1](man/figures/LPA1.png) ![LPA3](man/figures/LPA3.png)
+![LPA4](man/figures/LPA4.png)
 
 ### LCA (Latent Class Analysis)
 
 ![LCA1](man/figures/LCA1.png) ![LCA2](man/figures/LCA2.png)
-![LCA3](man/figures/LCA3.png) ![LCA4](man/figures/LCA4.png)
-
-### CFA (Confirmatory Factor Analysis)
-
-![CFA1](man/figures/CFA1.png) ![CFA2](man/figures/CFA2.png)
+![LCA3](man/figures/LCA3.png) \### CFA (Confirmatory Factor Analysis)
 ![CFA3](man/figures/CFA3.png) ![CFA4](man/figures/CFA4.png)
 ![CFA5](man/figures/CFA5.png) ![CFA6](man/figures/CFA6.png)
-![CFA7](man/figures/CFA7.png) ![CFA8](man/figures/CFA8.png)
-![CFA9](man/figures/CFA9.png)
-
-### SEM (Structural Equation Modelling)
+![CFA7](man/figures/CFA7.png) \### SEM (Structural Equation Modelling)
 
 <figure>
 <img src="man/figures/SEM.png" alt="SEM" />
@@ -128,7 +120,7 @@ upload, built-in datasets, interactive plots, and reporting features.
 
 ![LTA1](man/figures/LTA1.png) ![LTA2](man/figures/LTA2.png)
 ![LTA3](man/figures/LTA3.png) ![LTA4](man/figures/LTA4.png)
-![LTA5](man/figures/LTA5.png) ![LTA6](man/figures/LTA6.png)
+![LTA6](man/figures/LTA6.png)
 
 ------------------------------------------------------------------------
 
