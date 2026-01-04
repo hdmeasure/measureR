@@ -1,5 +1,5 @@
 
-# projectLSA <img src="man/figures/logoProjectLSA.png" align="right" width="120" />
+# projectLSA <img src="man/figures/logoProjectLSA.png" align="right" width="200" />
 
 projectLSA is an R package that provides a complete graphical user
 interface (GUI) for conducting **Latent Structure Analysis (LSA)**
@@ -20,7 +20,7 @@ package accessible for researchers, students, and applied analysts.
 ## Installation
 
 ``` r
-# Install from CRAN (when available)
+# Install from CRAN
 install.packages("projectLSA")
 
 # Install development version from GitHub (optional)
