@@ -41,7 +41,7 @@ package accessible for researchers, students, and applied analysts.
 install.packages("projectLSA")
 
 # Install development version from GitHub (optional)
-# remotes::install_github("hasandjidu/projectLSA")
+remotes::install_github("hasandjidu/projectLSA")
 ```
 
 ------------------------------------------------------------------------
