@@ -33,7 +33,7 @@ lpa_ui <- function(project) {
           uiOutput("id_select_ui"),
           uiOutput("var_select_ui"),
           numericInput("min_profiles", "Min Number of Profiles:", 2, min = 1),
-          numericInput("max_profiles", "Max. Number of Profiles:", 10, min = 2),
+          numericInput("max_profiles", "Max. Number of Profiles:", 6, min = 2),
           
           actionButton("run_lpa", 
                        label = tagList(icon("play"), "Run LPA"), 
