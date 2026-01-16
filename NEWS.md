@@ -1,3 +1,11 @@
+# projectLSA 0.0.6
+
+* Extended and enhanced the Latent Class Analysis (LCA) and Latent Profile Analysis (LPA) modules with additional tools for in-depth result exploration.
+* Added advanced exploratory features to support deeper inspection of class/profile characteristics, model outputs, and interpretation workflows.
+* Improved interactivity and usability of LCA and LPA result views within the Shiny application.
+* Internal refinements to the Shiny application codebase to support the new exploratory functionality.
+* No changes to the public API or core estimation procedures.
+
 # projectLSA 0.0.5
 
 * Documentation updated and expanded, including README.Rmd, README.md, and rendered README.html.
