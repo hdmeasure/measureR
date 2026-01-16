@@ -38,9 +38,20 @@ server_lta <- function(input, output, session) {
       df <- as.data.frame(psych::bfi) %>% dplyr::select(A1:E2) %>% tidyr::drop_na()
     } else {
       req(input$datafile_lta)
-      ext <- tools::file_ext(input$datafile_lta$name)
-      df <- if(ext == "csv") read.csv(input$datafile_lta$datapath) else readxl::read_excel(input$datafile_lta$datapath)
-      df <- df %>% mutate(across(everything(), ~ifelse(.x=="", NA, .x)))%>% tidyr::drop_na()
+      ext <- tolower(tools::file_ext(input$datafile_lta$name))
+      showModal(modalDialog(title = NULL, "Reading Your File, Please wait...", footer = NULL, easyClose = FALSE))
+      df <- switch(
+        ext,
+        "csv"  = data.table::fread(input$datafile_lta$datapath,data.table = FALSE),
+        "xls"  = readxl::read_excel(input$datafile_lta$datapath),
+        "xlsx" = readxl::read_excel(input$datafile_lta$datapath),
+        "sav"  = haven::read_sav(input$datafile_lta$datapath),
+        "rds"  = readRDS(input$datafile_lta$datapath),
+        stop("Unsupported file type. Please upload CSV, Excel, SPSS (.sav), or RDS file.")
+      )
+      removeModal()
+      df <- df %>% mutate(across(everything(), ~ifelse(.x == "", NA, .x)),
+                          id_auto = paste0("id_", sprintf("%04d", 1:n())))
     }
     return(df)
   })

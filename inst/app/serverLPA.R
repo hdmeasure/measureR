@@ -5,6 +5,7 @@ server_lpa <- function(input, output, session) {
   library(ggplot2)
   library(stats)
   library(haven)
+  library(data.table)
   set.seed(100)
 
   # --- Upload data ----
@@ -22,7 +23,7 @@ server_lpa <- function(input, output, session) {
       showModal(modalDialog(title = NULL, "Reading Your File, Please wait...", footer = NULL, easyClose = FALSE))
       df <- switch(
         ext,
-        "csv"  = read.csv(input$datafile$datapath, stringsAsFactors = FALSE),
+        "csv"  = data.table::fread(input$datafile$datapath,data.table = FALSE),
         "xls"  = readxl::read_excel(input$datafile$datapath),
         "xlsx" = readxl::read_excel(input$datafile$datapath),
         "sav"  = haven::read_sav(input$datafile$datapath),
@@ -31,8 +32,7 @@ server_lpa <- function(input, output, session) {
       )
       removeModal()
       df <- df %>% mutate(across(everything(), ~ifelse(.x == "", NA, .x)),
-                          id_auto = paste0("id_", sprintf("%04d", 1:n()))
-                          )
+                          id_auto = paste0("id_", sprintf("%04d", 1:n())))
     }
     return(df)
   })

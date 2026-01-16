@@ -6,10 +6,24 @@ server_efa <- function(input, output, session) {
   data_user <- reactive({
     if (input$data_source == "bfi") return(psych::bfi %>% dplyr::select(A1:O5)%>% rownames_to_column("id_auto"))
     if (input$data_source == "HolzingerSwineford1939") return(lavaan::HolzingerSwineford1939%>% dplyr::select(x1:x9)%>% rownames_to_column("id_auto"))
-    req(input$datafile)
-    ext <- tools::file_ext(input$datafile$name)
-    if (ext == "csv") read.csv(input$datafile$datapath)
-    else read_excel(input$datafile$datapath)
+    if (input$data_source == "upload") {
+      req(input$datafile)
+      ext <- tolower(tools::file_ext(input$datafile$name))
+      showModal(modalDialog(title = NULL, "Reading Your File, Please wait...", footer = NULL, easyClose = FALSE))
+      df <- switch(
+        ext,
+        "csv"  = data.table::fread(input$datafile$datapath,data.table = FALSE),
+        "xls"  = readxl::read_excel(input$datafile$datapath),
+        "xlsx" = readxl::read_excel(input$datafile$datapath),
+        "sav"  = haven::read_sav(input$datafile$datapath),
+        "rds"  = readRDS(input$datafile$datapath),
+        stop("Unsupported file type. Please upload CSV, Excel, SPSS (.sav), or RDS file.")
+      )
+      removeModal()
+      df <- df %>% mutate(across(everything(), ~ifelse(.x == "", NA, .x)),
+                          id_auto = paste0("id_", sprintf("%04d", 1:n())))
+    }
+    return(df)
   })
   
 

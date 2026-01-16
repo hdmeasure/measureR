@@ -6,27 +6,34 @@ server_cfa <- function(input, output, session) {
   library(tibble)
   library(semptools)
   library(semTools)
-  
+  library(data.table)
   
   data_user <- reactive({
     if (input$data_source == "bfi") {
       df <- psych::bfi %>% dplyr::select(A1:O5) %>% tibble::rownames_to_column("id_auto")
-      return(df)
     }
     if (input$data_source == "HolzingerSwineford1939") {
       df <- lavaan::HolzingerSwineford1939 %>% dplyr::select(x1:x9) %>% tibble::rownames_to_column("id_auto")
-      return(df)
     }
     
     if (input$data_source == "upload") {
       req(input$datafile)
-      ext <- tools::file_ext(input$datafile$name)
-      if (ext == "csv") {
-        read.csv(input$datafile$datapath)
-      } else {
-        readxl::read_excel(input$datafile$datapath)
-      }
+      ext <- tolower(tools::file_ext(input$datafile$name))
+      showModal(modalDialog(title = NULL, "Reading Your File, Please wait...", footer = NULL, easyClose = FALSE))
+      df <- switch(
+        ext,
+        "csv"  = data.table::fread(input$datafile$datapath,data.table = FALSE),
+        "xls"  = readxl::read_excel(input$datafile$datapath),
+        "xlsx" = readxl::read_excel(input$datafile$datapath),
+        "sav"  = haven::read_sav(input$datafile$datapath),
+        "rds"  = readRDS(input$datafile$datapath),
+        stop("Unsupported file type. Please upload CSV, Excel, SPSS (.sav), or RDS file.")
+      )
+      removeModal()
+      df <- df %>% mutate(across(everything(), ~ifelse(.x == "", NA, .x)),
+                          id_auto = paste0("id_", sprintf("%04d", 1:n())))
     }
+    return(df)
   })
   
   output$id_select_ui <- renderUI({

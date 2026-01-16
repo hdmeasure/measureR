@@ -43,13 +43,9 @@ data_source <- reactive({
     req(input$datafile_lca)
     showModal(modalDialog(title = NULL, "Reading Your File, Please wait...", footer = NULL, easyClose = FALSE))
     ext <- tolower(tools::file_ext(input$datafile_lca$name))
-    showModal(modalDialog(title = NULL, "Reading Your File, Please wait...", footer = NULL, easyClose = FALSE))
     df <- switch(
       ext,
-      "csv"  = data.table::fread(
-        input$datafile_lca$datapath,
-        data.table = FALSE
-      ),
+      "csv"  = data.table::fread(input$datafile_lca$datapath,data.table = FALSE),
       "xls"  = readxl::read_excel(input$datafile_lca$datapath),
       "xlsx" = readxl::read_excel(input$datafile_lca$datapath),
       "sav"  = haven::read_sav(input$datafile_lca$datapath),
