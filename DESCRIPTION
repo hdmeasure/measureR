@@ -1,5 +1,5 @@
 Package: measureR
-Title: An R Shiny application for educational and psychological measurement
+Title: Shiny Application for Educational and Psychological Measurement
 Version: 0.0.1
 Authors@R:
     c(

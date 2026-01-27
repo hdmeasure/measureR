@@ -30,7 +30,7 @@ homepage_ui <- function() {
               HTML(
                 "<strong>How to Cite:</strong><br>
                  Djidu, H. (2026).
-                 <em>measureR: An R Shiny application for educational and psychological measurement</em>.
+                 <em>measureR: Shiny application for educational and psychological measurement</em>.
                  GitHub repository.<br>
                  <a href='https://github.com/hdmeasure/measureR' target='_blank'>
                  https://github.com/hdmeasure/measureR
