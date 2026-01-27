@@ -94,46 +94,18 @@ upload, built-in datasets, interactive plots, and reporting features.
 
 ------------------------------------------------------------------------
 
-## Example Screenshots
+## Live Demo (Shiny Application)
 
-### Home Page measureR
+The full functionality of **measureR** is available through an
+interactive Shiny web application.
 
-<figure>
-<img src="man/figures/Homepage.png" alt="Homepage" />
-<figcaption aria-hidden="true">Homepage</figcaption>
-</figure>
+👉 **Launch the live application:**  
+<https://measure.shinyapps.io/measureR/>
 
-### CV (Content Validity)
-
-![AIKEN](man/figures/AIKEN.png) ![CVR](man/figures/CVR.png)
-
-### CFA (Confirmatory Factor Analysis) & SEM (Structural Equation Modelling)
-
-<figure>
-<img src="man/figures/CFA1.png" alt="CFA1" />
-<figcaption aria-hidden="true">CFA1</figcaption>
-</figure>
-
-<figure>
-<img src="man/figures/CFA2.png" alt="CFA2" />
-<figcaption aria-hidden="true">CFA2</figcaption>
-</figure>
-
-<figure>
-<img src="man/figures/SEM.png" alt="SEM" />
-<figcaption aria-hidden="true">SEM</figcaption>
-</figure>
-
-### CTT (Classical Test Theory)
-
-<figure>
-<img src="man/figures/CTT3.png" alt="CTT3" />
-<figcaption aria-hidden="true">CTT3</figcaption>
-</figure>
-
-### IRT (Item Response Theory)
-
-![IRT1](man/figures/IRT1.png) ![IRT2](man/figures/IRT2.png)
+The web interface provides direct access to all analysis modules,
+including Content Validity, Exploratory and Confirmatory Factor
+Analysis, Classical Test Theory, and Item Response Theory, allowing
+users to explore the application without local installation.
 
 ------------------------------------------------------------------------
 
@@ -141,7 +113,7 @@ upload, built-in datasets, interactive plots, and reporting features.
 
 If you use measureR in publications, please cite:
 
-Djidu, H. (2026). *measureR: An R Shiny application for educational and
+Djidu, H. (2026). *measureR: Shiny application for educational and
 psychological measurement. <https://github.com/hdmeasure/measureR>*
 
 ------------------------------------------------------------------------
