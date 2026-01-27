@@ -140,7 +140,7 @@ efa_ui <- function(project) {
           div(
             style = "text-align:center;",
             tags$hr(),
-            tags$h5("projectLSA Was Developed By:"),
+            tags$h5("measureR Was Developed By:"),
             tags$p(
               tags$a(
                 href = "https://scholar.google.com/citations?user=PSAwkTYAAAAJ&hl=id",
@@ -149,31 +149,6 @@ efa_ui <- function(project) {
               tags$br(),
               "Universitas Sembilanbelas November Kolaka"
             ),
-            tags$h5("Supervised By:"),
-            tags$p(
-              tags$a(
-                href = "https://scholar.google.com/citations?user=7CzPTYIAAAAJ&hl=id",
-                target = "_blank",
-                "Prof. Dr. Heri Retnawati, M.Pd."), 
-              tags$br(),
-              "Universitas Negeri Yogyakarta"
-            ),
-            
-            tags$p(tags$a(
-              href = "https://scholar.google.com/citations?hl=id&user=VGKeBm0AAAAJ",
-              target = "_blank",
-              "Prof. Dr. Samsul Hadi"), 
-              tags$br(),
-              "Universitas Negeri Yogyakarta"
-            ),
-            tags$p(tags$a(
-              href = "https://scholar.google.com/citations?hl=id&user=k4MA8XgAAAAJ",
-              target = "_blank",
-              "Dr. Drs. Ir. Haryanto, M.Pd., M.T."), 
-              tags$br(),
-              "Universitas Negeri Yogyakarta"
-            ),
-            tags$b("Contact:"),
             tags$a("hasandjidu@gmail.com"),
             tags$hr()
           )

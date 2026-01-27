@@ -122,7 +122,7 @@ styleCSS <- tags$head(
   padding: 4px 10px !important;    
   font-size: 9px !important;        
   border-radius: 6px !important; 
-  background-color: darkcyan !important;
+  background-color: black !important;
   color: white !important;
   border: none !important;
   font-weight: 600 !important;
@@ -233,23 +233,18 @@ styleCSS <- tags$head(
   .quad-container::after {
     content: '';
     position: absolute;
-    background: blue;
     z-index: 1;
   }
 
-  .quad-container::before {
-    top: 50%;
-    left: 0;
-    width: 100%;
-    height: 2px;
-  }
+.quad-container::before{
+  top:50%;left:0;width:100%;height:3px;
+  background:linear-gradient(90deg,#111827,#1e40af);
+}
 
-  .quad-container::after {
-    left: 50%;
-    top: 0;
-    width: 2px;
-    height: 100%;
-  }
+.quad-container::after{
+  left:50%;top:0;width:3px;height:100%;
+  background:linear-gradient(180deg,#f59e0b,#111827);
+}
 
   .axis-label {
     position: absolute;
@@ -290,12 +285,12 @@ styleCSS <- tags$head(
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 6;
+    z-index: 2;
     padding: 6px;
   }
 
   .center-logo img {
-    width: clamp(70px, 2vw, 200px);
+    width: clamp(125px, 3vw, 170px);
     height: auto;
     border-radius: 50%;
   }
@@ -318,20 +313,22 @@ styleCSS <- tags$head(
   .quad-card:hover {
     transform: scale(1.05);
   }
-#card_lca { background: #eef3ff; border: 2px solid #c7d4ff; }   /* Blue */
-#card_lpa { background: #edf7f6; border: 2px solid #c6e6e2; }   /* Teal */
-#card_fa  { background: #f3effa; border: 2px solid #d9cff0; }   /* Purple */
-#card_lta { background: #fbeef2; border: 2px solid #f2cdd8; }   /* Rose */
-/* Warna & tema masing-masing card */
-#card_lpa .project-icon { background: #dff1ee; color: #138f87; } /* Teal */
-#card_lca .project-icon { background: #dde6ff; color: #2a55e6; } /* Blue */
-#card_fa  .project-icon { background: #e6e0f5; color: #6b4cc2; } /* Purple */
-#card_lta .project-icon { background: #f6dde6; color: #c23b63; } /* Rose */
+#card_lta{background:#e8efff;border:2px solid #1e40af}
+#card_ctt{background:#f3f4f6;border:2px solid #111827}
+#card_fa {background:#ffedd5;border:2px solid #f59e0b}
+#card_val{background:#fee2e2;border:2px solid #ef4444}
 
-#card_lca .btn-pill { background: #2a55e6; }  /* Blue */
-#card_lpa .btn-pill { background: #138f87; }  /* Teal */
-#card_fa  .btn-pill { background: #6b4cc2; }  /* Purple */
-#card_lta .btn-pill { background: #c23b63; }  /* Rose */
+#card_lta .project-icon{background:#dbe7ff;color:#1e40af}
+#card_ctt .project-icon{background:#e5e7eb;color:#111827}
+#card_fa  .project-icon{background:#ffedd5;color:#f59e0b}
+#card_val .project-icon{background:#fee2e2;color:#ef4444}
+
+#card_lta .btn-pill{background:#1e40af}
+#card_ctt .btn-pill{background:#111827}
+#card_fa  .btn-pill{background:#f59e0b}
+#card_val .btn-pill{background:#ef4444}
+
+
 
   .project-title {
     font-size: clamp(12px, 1.5vw, 27px);
@@ -503,6 +500,27 @@ styleCSS <- tags$head(
       transform-origin: center top;
     }
   }
+  
+  .badge-warning{
+  background:#fee2e2;
+  border-left:4px solid #ef4444;
+  color:#7f1d1d;
+  padding:8px 12px;
+  border-radius:8px;
+  font-size:12px;
+  line-height:1.4;
+}
+
+.badge-info{
+  background:#e0e7ff;
+  border-left:4px solid #3b82f6;
+  color:#1e3a8a;
+  padding:8px 12px;
+  border-radius:8px;
+  font-size:12px;
+  line-height:1.4;
+}
+
   
   "))
 )

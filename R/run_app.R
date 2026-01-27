@@ -1,18 +1,18 @@
-#' Launch the projectLSA Shiny Application
+#' Launch the measureR Shiny Application
 #'
-#' This function starts the Shiny app included in the projectLSA package.
+#' This function starts the Shiny app included in the measureR package.
 #'
 #' @return Launches a Shiny application (no return value)
 #' @examples
 #' if (interactive()) {
-#'   projectLSA::run_projectLSA()
+#'   measureR::run_measureR()
 #' }
 #'
 #' @export
-run_projectLSA <- function() {
-  app_dir <- system.file("app", package = "projectLSA")
+run_measureR <- function() {
+  app_dir <- system.file("app", package = "measureR")
   if (app_dir == "") {
-    stop("Could not find Shiny app. Try reinstalling the projectLSA package.", call. = FALSE)
+    stop("Could not find Shiny app. Try reinstalling the measureR package.", call. = FALSE)
   }
   shiny::runApp(app_dir, launch.browser = TRUE)
 }

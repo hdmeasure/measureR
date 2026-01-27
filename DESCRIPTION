@@ -1,6 +1,6 @@
-Package: projectLSA
-Title: R Shiny Application for Latent Structure Analysis with a Graphical User Interface
-Version: 0.0.7
+Package: measureR
+Title: An R Shiny application for educational and psychological measurement
+Version: 0.0.1
 Authors@R:
     c(
       person(
@@ -9,45 +9,22 @@ Authors@R:
         email = "hasandjidu@gmail.com",
         role = c("aut", "cre"),
         comment = c(ORCID = "0000-0003-1110-6815")
-      ),
-      person(
-        given = "Heri",
-        family = "Retnawati",
-        role = "ctb",
-        comment = c(ORCID = "0000-0002-1792-5873")
-      ),
-      person(
-        given = "Samsul",
-        family = "Hadi",
-        role = "ctb",
-        comment = c(ORCID = "0000-0003-3437-2542")
-      ),
-      person(
-        given = "Haryanto",
-        family = "",
-        role = "ctb",
-        comment = c(ORCID = "0000-0003-3322-904X")
       )
     )
-Description: Provides an interactive Shiny-based toolkit for conducting latent structure analyses, including Latent Profile Analysis (LPA), Latent Class Analysis (LCA), Latent Trait Analysis (LTA/IRT), Exploratory Factor Analysis (EFA), Confirmatory Factor Analysis (CFA), and Structural Equation Modeling (SEM). The implementation is grounded in established methodological frameworks: LPA is supported through 'tidyLPA' (Rosenberg et al., 2018) <doi:10.21105/joss.00978>, LCA through 'poLCA' (Linzer & Lewis, 2011) <doi:10.32614/CRAN.package.poLCA> & 'glca' (Kim & Kim, 2024) <doi:10.32614/CRAN.package.glca>, LTA/IRT via 'mirt' (Chalmers, 2012) <doi:10.18637/jss.v048.i06>, and EFA via 'psych' (Revelle, 2025). SEM and CFA functionalities build upon the 'lavaan' framework (Rosseel, 2012) <doi:10.18637/jss.v048.i02>. Users can upload datasets or use built-in examples, fit models, compare fit indices, visualize results, and export outputs without programming.
+Description: Provides an interactive Shiny-based toolkit for educational and psychological measurement supporting content validity, dimensionality assessment, Classical Test Theory (CTT) using the 'CTT' package (Willse, 2018) <doi:10.32614/CRAN.package.CTT>, Item Response Theory (IRT) via 'mirt' (Chalmers, 2012) <doi:10.18637/jss.v048.i06>, Exploratory Factor Analysis through 'psych' (Revelle, 2025), and Confirmatory Factor Analysis and Structural Equation Modeling based on the 'lavaan' framework (Rosseel, 2012) <doi:10.18637/jss.v048.i02>, allowing users to upload data, evaluate models, visualize results, and export outputs through an intuitive graphical interface without programming.
 License: MIT + file LICENSE
 Depends:
     R (>= 4.0.0)
 Encoding: UTF-8
 Imports:
     colourpicker,
+    CTT,
     data.table,
     dplyr,
     DT,
-    ggiraph,
     ggplot2,
-    glca,
-    haven,
     lavaan,
-    mclust,
     mirt,
-    plotly,
-    poLCA,
     psych,
     purrr,
     readr,
@@ -62,7 +39,6 @@ Imports:
     stringr,
     tibble,
     tidyr,
-    tidyLPA,
     tidyverse,
     viridisLite
 Suggests:
@@ -73,5 +49,5 @@ LazyData: false
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 VignetteBuilder: knitr
-URL: https://github.com/hasandjidu/projectLSA
-BugReports: https://github.com/hasandjidu/projectLSA/issues
+URL: https://github.com/hdmeasure/measureR
+BugReports: https://github.com/hdmeasure/measureR/issues

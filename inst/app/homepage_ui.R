@@ -1,81 +1,139 @@
 homepage_ui <- function() {
+  
   fluidPage(
-
-    div(class="landing",
-        div(class="hero",
-            div(class="welcome","WELCOME TO"),
-            div( class = "app-name", "projectLSA" ),            
+    
+    # =====================================
+    # HERO SECTION
+    # =====================================
+    div(class = "landing",
+        div(class = "hero",
+            div(class = "welcome", "WELCOME TO"),
+            div(class = "app-name", "measureR"),
             
-            tags$p(
-              style = "font-size: 12px; margin-top: 2px; color: darkblue;",
-              "A comprehensive and interactive R Shiny application designed to support Latent Structure Analysis (LSA) through an intuitive graphical interface for running analyses, visualizing models, and interpreting results—all without requiring users to write any code."
-            ),
             div(
               style = "
-              background-color: #f5f5f5;
-              border-left: 4px solid #4c8bf5;
-              padding: 3px 12px;
-              border-radius: 6px;
-              margin-top: 2px;
-              box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-              font-size: 12px;
-  ",
+                background-color: #f5f5f5;
+                border-left: 4px solid #4c8bf5;
+                padding: 6px 14px;
+                border-radius: 6px;
+                margin-top: 6px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                font-size: 12px;
+                max-width: 900px;
+              ",
+              tags$p(
+                style = "font-size: 12px; margin-top: 2px; color: darkblue;",
+                "An integrated R Shiny application for educational and psychological measurement, ",
+                "supporting content validity, dimensionality analysis, classical test theory (CTT), ",
+                "and item response theory (IRT) through an intuitive graphical interface."
+              ),
               HTML(
-                '<strong>How to Cite:</strong> 
-                 Djidu, H., Retnawati, H., Hadi, S., Haryanto (2026). <em>projectLSA: R Shiny application for latent structure analysis with a graphical user interface</em>. 
-                 <a href="https://doi.org/10.32614/CRAN.package.projectLSA" target="_blank">https://doi.org/10.32614/CRAN.package.projectLSA/.</a>
-                R package version 0.0.6.'
+                "<strong>How to Cite:</strong><br>
+                 Djidu, H. (2026).
+                 <em>measureR: An R Shiny application for educational and psychological measurement</em>.
+                 GitHub repository.<br>
+                 <a href='https://github.com/hdmeasure/measureR' target='_blank'>
+                 https://github.com/hdmeasure/measureR
+                 </a>"
               )
             )
-            
         ),
         br(),
-        div(class="subtitle","Choose one projectLSA you want to work on:")
+        div(class = "subtitle",
+            "Choose the analysis module you want to work on:")
     ),
+    
     br(),
-    div(class="quad-container",
-        div(class="axis-label x-top","Latent = categorical"),
-        div(class="axis-label x-bottom","Latent = scale"),
-        div(class="axis-label y-left","Observed = scale <<"),
-        div(class="axis-label y-right",">> Observed = categorical"),
-        div(class="center-logo", tags$img(src="logoProjectLSA.png")),
+  
+    
+    
+    # =====================================
+    # QUADRANT CONTAINER (NO AXIS LINES)
+    # =====================================
+    div(class = "quad-container",
         
-        div(class="quad-card", id="card_lpa", onclick="$('#go_lpa').click();",
-            div(class="project-icon", tags$i(class="fa-solid fa-chart-simple")),
-            div(class="project-title","LPA - Latent Profile Analysis"),
-            div(class="project-desc","Identify latent profile (unobserved subgroups) within your sample using continuous data."),
-            actionButton("go_lpa", label="OPEN LPA", class="btn-pill")
+        # ===== BIG CENTER LOGO =====
+        div(class = "center-logo large-logo",
+            tags$img(src = "logomeasureR.png")
         ),
-        div(class="quad-card", id="card_lca", onclick="$('#go_lca').click();",
-            div(class="project-icon", tags$i(class="fa-solid fa-layer-group")),
-            div(class="project-title","LCA - Latent Class Analysis"),
-            div(class="project-desc","Identify latent class (unobserved subgroups) within your sample using categorical data."),
-            actionButton("go_lca", label="OPEN LCA", class="btn-pill")
-        ),
-        div(class="quad-card", id="card_fa",
-            div(class="project-icon", tags$i(class="fa-solid fa-sitemap")),
-            div(class="project-title","FA - Factor Analysis"),
-            div(class="project-desc","Explore latent constructs with exploratory or confirmatory FA using continuous data."),
+        
+        # =================================
+        # 1️⃣ Content Validity (Top-Left)
+        # =================================
+        div(class = "quad-card align-tl", id = "card_val",
+            onclick = "$('#go_contentval').click();",
             
-            div(style="display: flex; gap: 10px; justify-content: center; margin-top: 10px; width: 100%;",
-                actionButton("go_efa", label="OPEN EFA", width = '50%', class="btn-pill btn-primary"),
-                actionButton("go_cfa", label="OPEN CFA", width = '50%', class="btn-pill btn-secondary")
-            )
+            div(class = "project-icon",
+                tags$i(class = "fa-solid fa-check-double")),
+            div(class = "project-title", "Content Validity"),
+            div(class = "project-desc",
+                "Expert agreement analysis using Aiken’s V, CVR (Lawshe), ",
+                "I-CVI, and S-CVI. Recommended as the first step in instrument development."
             ),
+            actionButton("go_contentval", "Content Validity", class = "btn-pill")
+        ),
         
-        div(class="quad-card", id="card_lta", onclick="$('#go_lta').click();",
-            div(class="project-icon", tags$i(class="fa-solid fa-brain")),
-            div(class="project-title","LTA - Latent Trait Analysis"),
-            div(class="project-desc","Estimate item and person parameters using LTA approaches using categorical data."),
-            actionButton("go_lta", label="OPEN LTA", class="btn-pill")
+        # =================================
+        # 2️⃣ Dimensionality & Assumptions (Top-Right)
+        # =================================
+        div(class = "quad-card align-tr", id = "card_fa",
+            
+            div(class = "project-icon",
+                tags$i(class = "fa-solid fa-sitemap")),
+            div(class = "project-title", "Dimensionality & Assumptions"),
+            div(class = "project-desc",
+                "Evaluation of latent structure and measurement assumptions ",
+                "through EFA, CFA"
+            ),
+            
+            div(style = "display:flex; gap:8px; width:100%;",
+                actionButton("go_efa", "EFA", class = "btn-pill", style="width:50%"),
+                actionButton("go_cfa", "CFA", class = "btn-pill", style="width:50%")
+            )
+        ),
+        
+        # =================================
+        # 3️⃣ Classical Test Theory (Bottom-Left)
+        # =================================
+        div(class = "quad-card align-bl", id = "card_ctt",
+            onclick = "$('#go_ctt').click();",
+            
+            div(class = "project-icon",
+                tags$i(class = "fa-solid fa-scale-balanced")),
+            div(class = "project-title", "Classical Test Theory"),
+            div(class = "project-desc",
+                "Item difficulty, discrimination indices, reliability ",
+                "(α), SEM, & distractor analysis using classical approaches."
+            ),
+            actionButton("go_ctt", "CTT", class = "btn-pill")
+        ),
+        
+        # =================================
+        # 4️⃣ Item Response Theory (Bottom-Right)
+        # =================================
+        div(class = "quad-card align-br", id = "card_lta",
+            onclick = "$('#go_lta').click();",
+            
+            div(class = "project-icon",
+                tags$i(class = "fa-solid fa-brain")),
+            div(class = "project-title", "Item Response Theory"),
+            div(class = "project-desc",
+                "Model-based estimation of item and person parameters ",
+                "for dichotomous and polytomous item responses."
+            ),
+            actionButton("go_lta", "IRT", class = "btn-pill")
         )
     ),
+    
+    # =====================================
+    # FOOTER
+    # =====================================
     div(
       style = "text-align:center;",
       tags$p(
         style = "font-size:13px; color:#777;",
-        format(Sys.Date(), "%Y"), 
-        "projectLSA. All rights reserved."
+        format(Sys.Date(), "%Y"),
+        " measureR. Hasan Djidu. All rights reserved."
       )
     )
   )

@@ -1,0 +1,122 @@
+---
+title: "Introduction to measureR"
+output:
+  rmarkdown::html_vignette:
+    df_print: paged
+vignette: >
+  %\VignetteIndexEntry{Introduction to measureR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Overview
+
+`measureR` provides a unified Shiny-based environment for **educational and psychological measurement**, including:
+
+- Content Validity (CV)
+- Exploratory Factor Analysis (EFA)
+- Confirmatory Factor Analysis (CFA)
+- Classical Test Theory (CTT)
+- Item Response Theory (IRT)
+
+The package is designed for users who prefer a graphical workflow without writing code, while still leveraging
+robust statistical methodologies implemented in well-established R packages.
+
+---
+
+# Installation
+
+```r
+install.packages("measureR")
+library(measureR)
+```
+
+---
+
+# Launching the Application
+
+```r
+library(measureR)
+run_measureR()
+```
+
+This will open the full Shiny interface, where you can upload data, choose an analysis module, and generate results.
+
+---
+
+# Modules Included
+
+## ✔ Content Validity (CV)
+- Aiken’s V, CVR (Lawshe), I-CVI, and S-CVI/Ave computation.
+- Automatic critical value comparison and interpretation badges.
+- Clear tabular summaries and export-ready results.
+
+## ✔ Exploratory Factor Analysis (EFA)
+- KMO, Bartlett test, parallel analysis.
+- Factor extraction with rotation.
+- Factor scores and loading matrix export.
+- Clean HTML summaries for clearer interpretation.
+
+## ✔ Confirmatory Factor Analysis (CFA)
+- Lavaan model editor.
+- Fit measures, loadings, factor scores.
+- Fully customized SEM path diagrams.
+
+## ✔ Classical Test Theory (CTT)
+- Item difficulty and discrimination indices.
+- Test reliability (α), SEM, and score distribution analysis.
+- Distractor analysis for multiple-choice items.
+- Comprehensive item and test-level summary outputs.
+
+## ✔ Item Response Theory (IRT)
+- Supports dichotomous and polytomous items.
+- Automatically fits Rasch, 2PL, 3PL (or PCM/GRM/GPCM).
+- ICC plots, test information, factor scores.
+- Multi-dimensional visualization with 3D surfaces and heatmaps.
+---
+
+# Example Workflow
+
+Below is a simple workflow using the built-in datasets.
+
+```r
+library(measureR)
+
+# Launch the GUI
+run_measureR()
+```
+
+Once inside the GUI:
+
+1. Choose a module (e.g., IRT)
+2. Upload your dataset or select a built-in dataset
+3. Choose variables and model settings
+4. Fit the models and explore the outputs
+
+---
+
+# Reproducibility and Reporting
+
+`measureR` provides:
+
+- Exportable tables (CSV, Excel)
+- Downloadable graphics (PNG)
+- Reproducible summaries and model comparisons
+
+This ensures results produced through the GUI can be published or documented with confidence.
+
+---
+
+# Citation
+
+Please cite this package as:
+
+Djidu, H. (2026).
+*measureR: An R Shiny application for educational and psychological measurement.  https://github.com/hdmeasure/measureR*
+---
+
+# Session Info
+
+```r
+sessionInfo()
+```

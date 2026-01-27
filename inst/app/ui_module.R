@@ -5,15 +5,15 @@ home_mod <- function(id){
   }
 
 # LCA module ----
-lca_mod <- function(id, project){
+ctt_mod <- function(id, project){
   ns <- NS(id)
-  lca_ui(project)
+  ctt_ui(project)
 }
 
 # LPA module ----
-lpa_mod <- function(id, project){
+contentval_mod <- function(id, project){
   ns <- NS(id)
-  lpa_ui(project)
+  contentval_ui(project)
 }
 # LPT module ----
 lta_mod <- function(id, project){
