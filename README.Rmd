@@ -6,11 +6,11 @@ output: github_document
 <!-- badges: start -->
 
 [![CRAN status](https://www.r-pkg.org/badges/version/measureR)](https://CRAN.R-project.org/package=measureR)
+[![CRAN release](https://www.r-pkg.org/badges/last-release/measureR)](https://CRAN.R-project.org/package=measureR)
 [![Downloads](https://cranlogs.r-pkg.org/badges/measureR)](https://cranlogs.r-pkg.org/badges/measureR)
 [![Total Downloads](https://cranlogs.r-pkg.org/badges/grand-total/measureR)](https://cranlogs.r-pkg.org/badges/grand-total/measureR)
 
 [![R-CMD-check](https://github.com/hdmeasure/measureR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/hdmeasure/measureR/actions/workflows/R-CMD-check.yaml)
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 
@@ -45,7 +45,7 @@ remotes::install_github("hdmeasure/measureR")
 
 ```r
 library(measureR)
-run_measureR()
+measureR::run_measureR()
 ```
 
 This opens the full Shiny application, including all LSA modules, data upload, built-in datasets, interactive plots, and reporting features.
@@ -86,14 +86,13 @@ This opens the full Shiny application, including all LSA modules, data upload, b
 
 ## Example Screenshots
 ### Home Page measureR
+
 ![Homepage](man/figures/Homepage.png)
 
 ### CV (Content Validity)
 
-![CV1](man/figures/CV1.png)
 ![AIKEN](man/figures/AIKEN.png)
 ![CVR](man/figures/CVR.png)
-![CVI](man/figures/CVI.png)
 
 ### CFA (Confirmatory Factor Analysis) &  SEM (Structural Equation Modelling)
 
@@ -105,8 +104,6 @@ This opens the full Shiny application, including all LSA modules, data upload, b
 
 ### CTT (Classical Test Theory)
 
-![CTT1](man/figures/CTT1.png)
-![CTT2](man/figures/CTT2.png)
 ![CTT3](man/figures/CTT3.png)
 
 ### IRT (Item Response Theory)

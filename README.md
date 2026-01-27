@@ -5,12 +5,13 @@
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version/measureR)](https://CRAN.R-project.org/package=measureR)
+[![CRAN
+release](https://www.r-pkg.org/badges/last-release/measureR)](https://CRAN.R-project.org/package=measureR)
 [![Downloads](https://cranlogs.r-pkg.org/badges/measureR)](https://cranlogs.r-pkg.org/badges/measureR)
 [![Total
 Downloads](https://cranlogs.r-pkg.org/badges/grand-total/measureR)](https://cranlogs.r-pkg.org/badges/grand-total/measureR)
 
 [![R-CMD-check](https://github.com/hdmeasure/measureR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/hdmeasure/measureR/actions/workflows/R-CMD-check.yaml)
-
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Lifecycle:
@@ -48,7 +49,7 @@ remotes::install_github("hdmeasure/measureR")
 
 ``` r
 library(measureR)
-run_measureR()
+measureR::run_measureR()
 ```
 
 This opens the full Shiny application, including all LSA modules, data
@@ -104,8 +105,7 @@ upload, built-in datasets, interactive plots, and reporting features.
 
 ### CV (Content Validity)
 
-![CV1](man/figures/CV1.png) ![AIKEN](man/figures/AIKEN.png)
-![CVR](man/figures/CVR.png) ![CVI](man/figures/CVI.png)
+![AIKEN](man/figures/AIKEN.png) ![CVR](man/figures/CVR.png)
 
 ### CFA (Confirmatory Factor Analysis) & SEM (Structural Equation Modelling)
 
@@ -126,8 +126,10 @@ upload, built-in datasets, interactive plots, and reporting features.
 
 ### CTT (Classical Test Theory)
 
-![CTT1](man/figures/CTT1.png) ![CTT2](man/figures/CTT2.png)
-![CTT3](man/figures/CTT3.png)
+<figure>
+<img src="man/figures/CTT3.png" alt="CTT3" />
+<figcaption aria-hidden="true">CTT3</figcaption>
+</figure>
 
 ### IRT (Item Response Theory)
 
