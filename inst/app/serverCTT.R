@@ -120,7 +120,7 @@ server_ctt <- function(input, output, session) {
                        )
                      )
       )
-    })
+    },server = FALSE)
     
     # =====================================================
     # STRUCTURE SUMMARY
@@ -222,7 +222,7 @@ server_ctt <- function(input, output, session) {
             c("#f8d7da","#fff3cd","#d4edda")
           )
         )
-    })
+    },server = FALSE)
     output$icc_ctt <- renderPlot({
       req(ctt_result(), input$item_distractor)
       item_select <- input$item_distractor 

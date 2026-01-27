@@ -161,7 +161,7 @@ server_contentval <- function(input, output, session) {
                    )
       )
     )
-  })
+  },server = FALSE)
   
   # =====================================
   # Wide → Long
@@ -248,7 +248,7 @@ server_contentval <- function(input, output, session) {
           c("#f8d7da", "#fff3cd", "#d4edda")
         )
       )
-  })
+  },server = FALSE)
   
   output$aiken_interpretation <- renderUI({
     if (data_type_info()$type == "dichotomous") {
@@ -321,7 +321,7 @@ server_contentval <- function(input, output, session) {
           c("#f8d7da", "#d4edda")
         )
       )
-  })
+  },server = FALSE)
   
   output$cvr_interpretation <- renderUI({
     if (data_type_info()$type == "ordinal") {
