@@ -115,7 +115,9 @@ users to explore the application without local installation.
 If you use measureR in publications, please cite:
 
 Djidu, H. (2026). *measureR: Tools for educational and psychological
-measurement. <https://github.com/hdmeasure/measureR>*. R Packages. —
+measurement. <https://github.com/hdmeasure/measureR>*. R Packages.
+
+------------------------------------------------------------------------
 
 ## Contributing
 
