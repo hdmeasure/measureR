@@ -75,17 +75,6 @@ This will open the full Shiny interface, where you can upload data, choose an an
 - Multi-dimensional visualization with 3D surfaces and heatmaps.
 ---
 
-# Example Workflow
-
-Below is a simple workflow using the built-in datasets.
-
-```r
-library(measureR)
-
-# Launch the GUI
-run_measureR()
-```
-
 Once inside the GUI:
 
 1. Choose a module (e.g., IRT)
@@ -112,7 +101,7 @@ This ensures results produced through the GUI can be published or documented wit
 Please cite this package as:
 
 Djidu, H. (2026).
-*measureR: An R Shiny application for educational and psychological measurement.  https://github.com/hdmeasure/measureR*
+*measureR: Tools for educational and psychological measurement.  https://github.com/hdmeasure/measureR*. R Packages.
 ---
 
 # Session Info

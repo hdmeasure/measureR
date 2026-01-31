@@ -52,8 +52,9 @@ library(measureR)
 measureR::run_measureR()
 ```
 
-This opens the full Shiny application, including all LSA modules, data
-upload, built-in datasets, interactive plots, and reporting features.
+This opens the full Shiny application, including all measureR modules,
+data upload, built-in datasets, interactive plots, and reporting
+features.
 
 ------------------------------------------------------------------------
 
@@ -113,10 +114,8 @@ users to explore the application without local installation.
 
 If you use measureR in publications, please cite:
 
-Djidu, H. (2026). *measureR: Shiny application for educational and
-psychological measurement. <https://github.com/hdmeasure/measureR>*
-
-------------------------------------------------------------------------
+Djidu, H. (2026). *measureR: Tools for educational and psychological
+measurement. <https://github.com/hdmeasure/measureR>*. R Packages. —
 
 ## Contributing
 
