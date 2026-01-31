@@ -6,7 +6,6 @@ server_lta <- function(input, output, session) {
   library(psych)
   data_user <- reactive({
     req(input$dimension, input$data_source_lta)
-    set.seed(321)
     if (input$dimension == "uni" && input$data_source_lta == "diko") {
       a <- matrix(runif(15, 0.8, 2), ncol = 1)      # discrimination 1 dimension
       d <- matrix(rnorm(15, 0, 1), ncol = 1)       # difficulty

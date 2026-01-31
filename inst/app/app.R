@@ -1,4 +1,4 @@
-# --- Project Latent Structure Analysis (Project LSA)  ---
+# --- measureR  ---
 # Author: Hasan Djidu
 
 # ==== Load UI & Server Components ====
@@ -45,6 +45,42 @@ ui <- fluidPage(
 # ==== Server =====
 server <- function(input, output, session) {
 
+  observeEvent(TRUE, {
+    showModal(modalDialog(
+      title = NULL,
+      div(
+        style = "text-align:center; line-height:1.6;",
+        tags$img(src = "logoMeasureR.png", height = "70px"),
+        tags$h3("Welcome to measureR"),
+        tags$p(
+          "measureR is an interactive R Shiny application designed to support ",
+          "educational and psychological measurement for research and teaching purposes."
+        ),
+        
+        HTML(
+          "
+        If you use this application in academic or research work, please cite it as follows:<br><br>
+        
+        <strong>In-text citation:</strong>
+        <span style='color:#2563eb;'>(Djidu, 2026)</span><br><br>
+        
+        <strong>Reference:</strong><br>
+        Djidu, H. (2026).
+        <em>measureR: Tools for educational and psychological measurement</em>.
+        R package (Version 0.0.1).
+        Available at:
+        <a href='https://github.com/hdmeasure/measureR' target='_blank'>
+        https://github.com/hdmeasure/measureR</a>.
+        "
+        )
+      ),
+      footer = modalButton("START"),
+      easyClose = TRUE,
+      size = "m"
+    ))
+  }, once = TRUE)
+  
+  
   # === reactive value to save current project ===
   project <- reactiveVal("home")
 
@@ -97,12 +133,12 @@ server <- function(input, output, session) {
       lta_reference <- list(
         Desjardins_Bulut_2018 = "Desjardins, C. D., & Bulut, O. (2018). <em>Handbook of educational measurement and psychometrics using R</em> (1st ed.). Chapman & Hall/CRC."
       )
-      render_package_refs(c("shiny", "tidyverse","projectLSA", "mirt", "DT", "readxl", "dplyr","ggplot2"),
+      render_package_refs(c("shiny", "tidyverse", "mirt", "DT", "readxl", "dplyr","ggplot2"),
                           manual_refs = lta_reference)
     })
     # EFA
     output$package_references_efa <- renderUI({
-      render_package_refs(c("shiny", "projectLSA","tidyverse", "psych","DT", "readxl", "dplyr", "ggplot2"))
+      render_package_refs(c("shiny","tidyverse", "psych","DT", "readxl", "dplyr", "ggplot2"))
     })
     # CFA References
     output$package_references_cfa <- renderUI({

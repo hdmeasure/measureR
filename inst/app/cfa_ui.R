@@ -182,7 +182,7 @@ cfa_ui <- function(project) {
                      tags$p(
                        style = "font-size:13px; color:#777;",
                        format(Sys.Date(), "%Y"), 
-                       "projectLSA. All rights reserved."
+                       "measureR All rights reserved."
                      )
                    )
                  )
