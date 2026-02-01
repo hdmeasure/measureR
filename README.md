@@ -58,6 +58,16 @@ features.
 
 ------------------------------------------------------------------------
 
+## Video Tutorial
+
+[![measureR – Installation and Quick
+Start](https://img.youtube.com/vi/PH9BmaNV2K8/maxresdefault.jpg)](https://www.youtube.com/watch?v=PH9BmaNV2K8)
+
+🎬 *Click the image to watch the installation and quick-start tutorial
+for **measureR***.
+
+------------------------------------------------------------------------
+
 ## Features
 
 ### ✔ Content Validity (CV)
