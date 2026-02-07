@@ -4,9 +4,7 @@
 #'
 #' @return Launches a Shiny application (no return value)
 #' @examples
-#' if (interactive()) {
-#'   measureR::run_measureR()
-#' }
+#' is.function(run_measureR)
 #' @export
 run_measureR <- function() {
   app_dir <- system.file("app", package = "measureR")

@@ -13,7 +13,5 @@ Launches a Shiny application (no return value)
 This function starts the Shiny app included in the measureR package.
 }
 \examples{
-if (interactive()) {
-  measureR::run_measureR()
-}
+is.function(run_measureR)
 }

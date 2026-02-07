@@ -1,3 +1,93 @@
+# ==== HELPER FUNCTIONS (GLOBAL IN SERVER) ====
+# CR AVE & HTMT ====
+calc_ave_cr <- function(fit) {
+  std <- lavaan::standardizedSolution(fit)
+  
+  loading <- std[std$op == "=~", c("lhs","rhs","est.std")]
+  loading$err <- 1 - loading$est.std^2
+  
+  result <- lapply(split(loading, loading$lhs), function(x) {
+    lambda2 <- x$est.std^2
+    theta   <- x$err
+    
+    AVE <- sum(lambda2) / (sum(lambda2) + sum(theta))
+    CR  <- (sum(x$est.std))^2 /
+      ((sum(x$est.std))^2 + sum(theta))
+    
+    c(AVE = AVE, CR = CR)
+  })
+  
+  as.data.frame(do.call(rbind, result))
+}
+calc_htmt <- function(data, model_syntax,
+                      missing = "listwise",
+                      ordered = NULL,
+                      absolute = TRUE) {
+  
+  ## -------------------------------------------------
+  ## 1. Parse lavaan model syntax
+  ## -------------------------------------------------
+  lines <- unlist(strsplit(model_syntax, "\n"))
+  fac_lines <- lines[grepl("=~", lines)]
+  
+  blocks <- lapply(fac_lines, function(x) {
+    trimws(unlist(strsplit(strsplit(x, "=~")[[1]][2], "\\+")))
+  })
+  names(blocks) <- trimws(sub("=~.*", "", fac_lines))
+  
+  ## -------------------------------------------------
+  ## 2. Lavcor
+  ## -------------------------------------------------
+  R <- lavaan::lavCor(
+    data,
+    missing = missing,
+    ordered = ordered,
+    output  = "cor"
+  )
+  
+  if (absolute) R <- abs(R)
+  
+  ## -------------------------------------------------
+  ## 3. Indicator check 
+  ## -------------------------------------------------
+  blocks <- lapply(blocks, function(x) intersect(x, colnames(R)))
+  
+  ## -------------------------------------------------
+  ## 4. calculate HTMT2 (GEOMETRIC MEAN)
+  ## -------------------------------------------------
+  k <- length(blocks)
+  htmt <- matrix(NA, k, k, dimnames = list(names(blocks), names(blocks)))
+  
+  for (i in seq_len(k)) {
+    for (j in seq_len(k)) {
+      
+      if (i == j) {
+        htmt[i, j] <- 1
+        next
+      }
+      
+      Xi <- blocks[[i]]
+      Xj <- blocks[[j]]
+      
+      # heterotrait correlations
+      r_het <- R[Xi, Xj]
+      
+      # monotrait correlations
+      r_mono_i <- R[Xi, Xi][lower.tri(R[Xi, Xi])]
+      r_mono_j <- R[Xj, Xj][lower.tri(R[Xj, Xj])]
+      
+      htmt[i, j] <-
+        exp(mean(log(r_het))) /
+        sqrt(
+          exp(mean(log(r_mono_i))) *
+            exp(mean(log(r_mono_j)))
+        )
+    }
+  }
+  
+  htmt
+}
+# ====END of CR AVE and HTMT ====
 server_cfa <- function(input, output, session) {
   library(lavaan)
   library(semPlot)
@@ -5,7 +95,7 @@ server_cfa <- function(input, output, session) {
   library(psych)
   library(tibble)
   library(semptools)
-  library(semTools)
+ # library(semTools)
   library(data.table)
   
   data_user <- reactive({
@@ -144,20 +234,34 @@ server_cfa <- function(input, output, session) {
       c(chisq = NA, df = NA, pvalue = NA, rmsea = NA, cfi = NA, tli = NA, srmr = NA, gfi = NA, agfi = NA, nfi = NA, nnfi = NA)
     })
     
-    AVE <- tryCatch({
-      semTools::AVE(object = fit)
-      }, error = function(e) {
-      '<NA>'
-    })
-    RelSEM <- tryCatch({
-      semTools::compRelSEM(object = fit)
+ 
+    # AVE <- tryCatch({
+    #   semTools::AVE(object = fit)
+    #   }, error = function(e) {
+    #   '<NA>'
+    # })
+    # RelSEM <- tryCatch({
+    #   semTools::compRelSEM(object = fit)
+    # }, error = function(e) {
+    #   '<NA>'
+    # })
+    # HTMT <- tryCatch({
+    #   semTools::htmt(model = input$cfa_model_text, data = df)
+    # }, error = function(e) {
+    #   '<NA>'
+    # })
+    
+    ave_cr <- tryCatch({
+      calc_ave_cr(fit)
     }, error = function(e) {
-      '<NA>'
+      NA
     })
+    AVE    <- setNames(ave_cr$AVE, rownames(ave_cr))
+    RelSEM <- setNames(ave_cr$CR,  rownames(ave_cr))
     HTMT <- tryCatch({
-      semTools::htmt(model = input$cfa_model_text, data = df)
+      calc_htmt(df, input$cfa_model_text)
     }, error = function(e) {
-      '<NA>'
+      NA
     })
     
     scoreCfa <- tryCatch({
