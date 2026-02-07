@@ -56,13 +56,12 @@ server <- function(input, output, session) {
           "measureR is an interactive R Shiny application designed to support ",
           "educational and psychological measurement for research and teaching purposes."
         ),
-        
         HTML(
           "
-        If you use this application in academic or research work, please cite it as follows:<br><br>
+        If you use this application in academic or research work, please cite it as follows:<br>
         
         <strong>In-text citation:</strong>
-        <span style='color:#2563eb;'>(Djidu, 2026)</span><br><br>
+        <span style='color:#2563eb;'>(Djidu, 2026)</span><br>
         
         <strong>Reference:</strong><br>
         Djidu, H. (2026).

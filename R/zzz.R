@@ -4,6 +4,4 @@
 #' will include the appropriate import directives.
 #'
 #' @import shiny
-#' @keywords internal
 "_PACKAGE"
-

@@ -16,5 +16,4 @@ This function starts the Shiny app included in the measureR package.
 if (interactive()) {
   measureR::run_measureR()
 }
-
 }

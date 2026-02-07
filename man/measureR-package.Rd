@@ -40,4 +40,3 @@ Useful links:
 \strong{Maintainer}: Hasan Djidu \email{hasandjidu@gmail.com} (\href{https://orcid.org/0000-0003-1110-6815}{ORCID})
 
 }
-\keyword{internal}

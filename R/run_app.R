@@ -7,7 +7,6 @@
 #' if (interactive()) {
 #'   measureR::run_measureR()
 #' }
-#'
 #' @export
 run_measureR <- function() {
   app_dir <- system.file("app", package = "measureR")

@@ -12,6 +12,5 @@
 #' The primary entry point is \code{\link{run_measureR}}, which launches the
 #' full interactive application.
 #'
-#' @keywords internal
 "_PACKAGE"
 
