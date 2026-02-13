@@ -27,8 +27,8 @@ ctt_ui <- function(project) {
             choices = c(
               "UPLOAD Scored Data" = "upload_scored",
               "UPLOAD Response with Key" = "upload_respkey",
-              "Built-in Dichotomous (Scored)" = "diko",
-              "Built-in Polytomous (A–D → 1–4)" = "poli",
+              "Built-in Dichotomous" = "diko",
+              "Built-in Polytomous" = "poli",
               "Built-in Response with Key" = "respkey"
             )
             ),
@@ -83,7 +83,7 @@ ctt_ui <- function(project) {
                    tags$b("Dichotomous Score"),
                    datatable(
                      data.frame(
-                       row_ID = c("S1","S2","S3"),
+                       ID = c("S1","S2","S3"),
                        I1 = c(1,0,1),
                        I2 = c(1,1,0),
                        I3 = c(0,1,0)
@@ -96,7 +96,7 @@ ctt_ui <- function(project) {
                    tags$b("Polytomous Score"),
                    datatable(
                      data.frame(
-                       row_ID = c("S1","S2","S3"),
+                       ID = c("S1","S2","S3"),
                        I1 = c(1,3,2),
                        I2 = c(4,2,3),
                        I3 = c(3,3,2)

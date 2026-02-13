@@ -50,17 +50,16 @@ server_contentval <- function(input, output, session) {
   }
   
   # ---- Aiken critical values (α = .05, one-tailed)
-  aiken_critical_table <- data.frame(
-    n = 3:10,
-    c4 = c(0.75, 0.69, 0.64, 0.60, 0.57, 0.54, 0.52, 0.50),
-    c5 = c(0.80, 0.75, 0.70, 0.67, 0.64, 0.62, 0.60, 0.58)
-  )
+  aiken_critical_table <- readRDS('aiken_critical_table.rds')
   
   get_aiken_critical <- function(n, c) {
     row <- aiken_critical_table[aiken_critical_table$n == n, ]
     if (nrow(row) == 0) return(NA)
+    if (c == 3) return(row$c3)
     if (c == 4) return(row$c4)
     if (c == 5) return(row$c5)
+    if (c == 6) return(row$c6)
+    if (c == 7) return(row$c7)
     NA
   }
   
@@ -80,6 +79,18 @@ server_contentval <- function(input, output, session) {
     row$CVR_crit
   }
   
+  get_scale_range <- function(scale_input) {
+    switch(
+      scale_input,
+      "1–4 Likert" = c(1, 4),
+      "1–5 Likert" = c(1, 5),
+      "1–6 Likert" = c(1, 6),
+      "1–7 Likert" = c(1, 7),
+      "Dichotomous (0/1)" = c(0, 1)
+    )
+  }
+  
+  
   # =====================================
   # Example data (display only)
   # =====================================
@@ -97,7 +108,6 @@ server_contentval <- function(input, output, session) {
   # Load data
   # =====================================
   data_cv <- reactive({
-    
     if (input$data_source_cv == "upload") {
       req(input$datafile_cv)
       ext <- tools::file_ext(input$datafile_cv$name)
@@ -111,6 +121,8 @@ server_contentval <- function(input, output, session) {
         input$rating_scale,
         "1–4 Likert" = 1:4,
         "1–5 Likert" = 1:5,
+        "1–6 Likert" = 1:6,
+        "1–7 Likert" = 1:7,
         "Dichotomous (0/1)" = 0:1
       )
       
@@ -123,19 +135,41 @@ server_contentval <- function(input, output, session) {
   })
   
   # =====================================
+  # Dynamic Item ID selector
+  # =====================================
+  output$id_select <- renderUI({
+    req(data_cv())
+    
+    selectInput(
+      "id_col",
+      label = "Select Item ID Column:",
+      choices = colnames(data_cv()),
+      selected = colnames(data_cv())[1],
+      multiple = FALSE
+    )
+  })
+  
+  # =====================================
   # Validate data format
   # =====================================
   data_validation <- reactive({
     df <- data_cv()
+    req(input$id_col)
     
     if (ncol(df) < 3)
       return("At least one item column and two expert columns are required.")
     
-    if (!all(sapply(df[, -1], is.numeric)))
+    expert_cols <- setdiff(names(df), input$id_col)
+    
+    if (length(expert_cols) < 2)
+      return("At least two expert columns are required.")
+    
+    if (!all(sapply(df[, expert_cols], is.numeric)))
       return("All expert rating columns must be numeric.")
     
     NULL
   })
+  
   
   output$data_warning <- renderUI({
     msg <- data_validation()
@@ -168,9 +202,19 @@ server_contentval <- function(input, output, session) {
   # =====================================
   data_long <- reactive({
     req(is.null(data_validation()))
-    data_cv() %>%
-      pivot_longer(-1, names_to = "expert", values_to = "score")
+    req(input$id_col)
+    
+    df <- data_cv()
+    
+    df %>%
+      pivot_longer(
+        cols = -all_of(input$id_col),
+        names_to = "expert",
+        values_to = "score"
+      ) %>%
+      rename(item_id = all_of(input$id_col))
   })
+  
   
   # =====================================
   # Detect data type (FINAL, single source)
@@ -203,52 +247,75 @@ server_contentval <- function(input, output, session) {
   # =====================================
   aiken_result <- reactive({
     
+    req(input$rating_scale)
+    
+    # Jika dichotomous → jangan evaluasi
+    if (input$rating_scale == "Dichotomous (0/1)") {
+      return(NULL)
+    }
+    
     df <- data_long()
-    lo <- min(df$score)
-    hi <- max(df$score)
+    
+    scale_range <- get_scale_range(input$rating_scale)
+    lo <- scale_range[1]
+    hi <- scale_range[2]
     
     n_expert <- length(unique(df$expert))
     c_scale  <- hi - lo + 1
+    
     v_crit   <- get_aiken_critical(n_expert, c_scale)
     
     df %>%
       group_by(item_id) %>%
       summarise(
-        Aiken_V   = mean((score - lo) / (hi - lo)),
+        Aiken_V = sum(score - lo) / (n_expert * (hi - lo)),
         V_critical = v_crit,
-        Decision  = case_when(
+        Decision = case_when(
           is.na(v_crit) ~ "Not evaluated",
           Aiken_V >= v_crit ~ "Valid",
           TRUE ~ "Not valid"
-        ),
-        Strength = case_when(
-          Aiken_V >= 0.80 ~ "Strong",
-          Aiken_V >= 0.60 ~ "Moderate",
-          TRUE ~ "Weak"
         ),
         .groups = "drop"
       )
   })
   
   output$aiken_table <- renderDT({
+    
+    if (input$rating_scale == "Dichotomous (0/1)") {
+      return(datatable(
+        data.frame(Message = "Aiken’s V is not applicable for dichotomous data."),
+        rownames = FALSE
+      ))
+    }
+    
     datatable(
       round_numeric(aiken_result(), 3),
       rownames = FALSE,
       extensions = 'Buttons',
       options=list(scrollX=TRUE, dom = 'Bt',pageLength=30,
-                   buttons = list(list(extend = 'excel',text = 'Export Excel',
-                                       filename = paste0('AIKEN'))
-                   )
-      )
-    ) %>%
+                   buttons = list(list(extend = 'excel',
+                                       text = 'Export Excel',
+                                       filename = 'AIKEN')))
+    ) %>% 
       formatStyle(
         "Aiken_V",
         backgroundColor = styleInterval(
           c(0.6, 0.8),
           c("#f8d7da", "#fff3cd", "#d4edda")
         )
+      ) %>% 
+      formatStyle(
+        "Decision",
+        backgroundColor = styleEqual(
+          c("Valid", "Not valid", "Not evaluated"),
+          c("#d4edda", "#f8d7da", "#fff3cd")
+        ),
+        fontWeight = "bold"
       )
-  },server = FALSE)
+  }, server = FALSE)
+  
+    
+ 
   
   output$aiken_interpretation <- renderUI({
     if (data_type_info()$type == "dichotomous") {
@@ -267,14 +334,9 @@ server_contentval <- function(input, output, session) {
         "Item validity is determined by comparing the observed Aiken’s V ",
         "with the critical value proposed by Aiken (1985), which depends on ",
         "the number of experts and rating categories. ",
-        tags$br(), tags$br(),
-        tags$b("Strength labels "), 
-        "describe the level of expert agreement and are descriptive rather ",
-        "than inferential."
       )
     }
   })
-  
   
   # =====================================
   # CVR (Lawshe)
@@ -283,8 +345,9 @@ server_contentval <- function(input, output, session) {
     
     df <- data_long()
     N <- length(unique(df$expert))
-    ne_val <- max(df$score)
-    
+    scale_range <- get_scale_range(input$rating_scale)
+    ne_val <- scale_range[2]
+
     cvr_crit <- get_cvr_critical(N)
     
     df %>%
@@ -320,6 +383,14 @@ server_contentval <- function(input, output, session) {
           df$CVR_critical[1],
           c("#f8d7da", "#d4edda")
         )
+      ) %>% 
+      formatStyle(
+        "Decision",
+        backgroundColor = styleEqual(
+          c("Valid", "Not valid", "Not evaluated"),
+          c("#d4edda", "#f8d7da", "#fff3cd")
+        ),
+        fontWeight = "bold"
       )
   },server = FALSE)
   

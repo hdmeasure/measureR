@@ -36,23 +36,26 @@ contentval_ui <- function(project) {
           
           conditionalPanel(
             condition = "input.data_source_cv == 'upload'",
-            fileInput("datafile_cv", "Upload Data (csv / xlsx)")
+            fileInput("datafile_cv", "Upload Data (csv / xlsx)"),
+            uiOutput('id_select')
           ),
           
           conditionalPanel(
             condition = "input.data_source_cv == 'sim'",
             numericInput("n_item", "Number of Items:", 10, min = 2),
             numericInput("n_expert", "Number of Experts:", 5, min = 2),
-            selectInput(
-              "rating_scale",
-              "Rating Scale:",
-              choices = c(
-                "1–4 Likert",
-                "1–5 Likert",
-                "Dichotomous (0/1)"
-              )
+          ),
+          selectInput(
+            "rating_scale",
+            "Rating Scale:",
+            choices = c(
+              "Dichotomous (0/1)",
+              "1–4 Likert",
+              "1–5 Likert",
+              "1–6 Likert",
+              "1–7 Likert"
             )
-          )
+          ),
         ),
         
         mainPanel(
