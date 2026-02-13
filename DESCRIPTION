@@ -1,6 +1,6 @@
 Package: measureR
 Title: Tools for Educational and Psychological Measurement
-Version: 0.0.1
+Version: 0.0.2
 Authors@R:
     c(
       person(
