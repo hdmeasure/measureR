@@ -327,9 +327,65 @@ server_ctt <- function(input, output, session) {
       )
     })
     
+    # =====================================================
+    # SCORE DISTRIBUTION & RELIABILITY
+    # =====================================================
+    output$split_half_out <- renderText({
+      req(ctt_result())
+      scored <- ctt_result()$scored
+      if (ncol(scored) < 2) return("Need at least 2 items")
+      
+      # Odd-Even Split
+      odd_idx <- seq(1, ncol(scored), by = 2)
+      even_idx <- seq(2, ncol(scored), by = 2)
+      
+      score_odd <- rowSums(scored[, odd_idx, drop = FALSE], na.rm = TRUE)
+      score_even <- rowSums(scored[, even_idx, drop = FALSE], na.rm = TRUE)
+      
+      r_oe <- cor(score_odd, score_even, use = "pairwise.complete.obs")
+      sb_oe <- 2 * r_oe / (1 + r_oe)
+      
+      paste0("Spearman-Brown (Odd-Even Split): ", round(sb_oe, 3))
+    })
     
+    output$alpha_if_deleted_out <- renderDT({
+      req(ctt_result())
+      ia <- CTT::itemAnalysis(as.data.frame(ctt_result()$scored), NA.Delete = TRUE)
+      df <- data.frame(
+        Item = colnames(ctt_result()$scored),
+        AlphaIfDeleted = round(ia$itemReport$alphaIfDeleted, 3)
+      )
+      datatable(df, options = list(dom = "t", pageLength = 100, scrollY = "300px"), rownames = FALSE)
+    })
     
+    output$score_histogram <- renderPlot({
+      req(ctt_result())
+      scores <- ctt_result()$score
+      library(ggplot2)
+      ggplot(data.frame(Score = scores), aes(x = Score)) +
+        geom_histogram(binwidth = 1, fill = "#0d6efd", color = "white", alpha = 0.8) +
+        theme_minimal() +
+        labs(x = "Total Score", y = "Frequency")
+    })
     
+    output$score_descriptives_out <- renderDT({
+      req(ctt_result())
+      scores <- ctt_result()$score
+      
+      df <- data.frame(
+        Statistic = c("N", "Mean", "Median", "Std. Deviation", "Min", "Max"),
+        Value = c(
+          length(na.omit(scores)),
+          round(mean(scores, na.rm = TRUE), 3),
+          round(median(scores, na.rm = TRUE), 3),
+          round(sd(scores, na.rm = TRUE), 3),
+          min(scores, na.rm = TRUE),
+          max(scores, na.rm = TRUE)
+        )
+      )
+      
+      datatable(df, options = list(dom = "t", pageLength = 10), rownames = FALSE)
+    })
     
   }
   

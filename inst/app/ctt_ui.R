@@ -162,18 +162,43 @@ ctt_ui <- function(project) {
                       uiOutput("item_selected_ui")
                )
               
-        )),
-        column(12,
-               tags$b("Reliability & SEM"),
-               uiOutput("reliability_box"),
-               br(),
-               HTML(paste0(
-                 "<b>References</b><br>",
-                 "Cronbach, L. J. (1951). Coefficient alpha and the internal structure of tests. <i>Psychometrika, 16</i>(3), 297–334.<br>",
-                 "Crocker, L., & Algina, J. (1986). <i>Introduction to classical and modern test theory</i>. Holt, Rinehart & Winston.<br>",
-                 "Willse, J. T. (2018). <i>CTT: Classical Test Theory Functions</i> [R package]."
-               ))
         )
+      )
+    ),
+    
+    tabPanel(
+      title = tagList(icon("chart-pie"), "Score Distribution & Reliability"),
+      value = "score_dist_rel_tab",
+      column(12,
+        column(6,
+          h4(icon("check-double"), "Test Reliability"),
+          uiOutput("reliability_box"),
+          br(),
+          h5("Split-Half Reliability"),
+          tags$p("Calculated using the Spearman-Brown prophecy formula."),
+          verbatimTextOutput("split_half_out"),
+          br(),
+          h5("Alpha if Item Deleted"),
+          DTOutput("alpha_if_deleted_out")
+        ),
+        column(6,
+          h4(icon("chart-area"), "Score Distribution"),
+          plotOutput("score_histogram"),
+          br(),
+          h5("Descriptive Statistics"),
+          DTOutput("score_descriptives_out")
+        ),
+        column(12,
+          br(),
+          tags$hr(),
+          HTML(paste0(
+            "<b>References</b><br>",
+            "Cronbach, L. J. (1951). Coefficient alpha and the internal structure of tests. <i>Psychometrika, 16</i>(3), 297–334.<br>",
+            "Crocker, L., & Algina, J. (1986). <i>Introduction to classical and modern test theory</i>. Holt, Rinehart & Winston.<br>",
+            "Willse, J. T. (2018). <i>CTT: Classical Test Theory Functions</i> [R package]."
+          ))
+        )
+      )
     ),
     
     # ===== INFO ======
@@ -194,6 +219,14 @@ ctt_ui <- function(project) {
                 "Dr. Hasan Djidu, M.Pd."),
               tags$br(),
               "Universitas Sembilanbelas November Kolaka"
+            ),
+            tags$p(
+              tags$a(
+                href = "https://scholar.google.com/citations?user=24m-AysAAAAJ&hl=id",
+                target = "_blank",
+                "Prof. Dr. Heri Retnawati, M.Pd."),
+              tags$br(),
+              "Universitas Negeri Yogyakarta"
             ),
             tags$a("hasandjidu@gmail.com"),
             tags$hr()

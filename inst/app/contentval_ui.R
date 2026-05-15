@@ -171,6 +171,28 @@ contentval_ui <- function(project) {
         )
       )
     ),
+    
+    # =====================================
+    # Inter-Rater Reliability
+    # =====================================
+    tabPanel(
+      title = "Inter-Rater Reliability",
+      column(12,
+             br(),
+        column(6,
+               h4(icon("users"), "Rater Agreement (Fleiss' Kappa)"),
+               verbatimTextOutput("fleiss_kappa_out"),
+               br(),
+               h4(icon("chart-line"), "Intraclass Correlation (ICC)"),
+               verbatimTextOutput("icc_out")
+        ),
+        column(6,
+               h4(icon("th"), "Agreement Heatmap"),
+               plotOutput("agreement_heatmap")
+        )
+      )
+    ),
+    
     # ===== INFO ======
     tabPanel(
       title = tagList(icon("info-circle"), "About"),
@@ -190,6 +212,14 @@ contentval_ui <- function(project) {
                 "Dr. Hasan Djidu, M.Pd."),
               tags$br(),
               "Universitas Sembilanbelas November Kolaka"
+            ),
+            tags$p(
+              tags$a(
+                href = "https://scholar.google.com/citations?user=24m-AysAAAAJ&hl=id",
+                target = "_blank",
+                "Prof. Dr. Heri Retnawati, M.Pd."),
+              tags$br(),
+              "Universitas Negeri Yogyakarta"
             ),
             tags$a("hasandjidu@gmail.com"),
             tags$hr()

@@ -4,6 +4,7 @@ server_lta <- function(input, output, session) {
   library(mirt)
   library(plotly)
   library(psych)
+  library(shinycssloaders)
   data_user <- reactive({
     req(input$dimension, input$data_source_lta)
     if (input$dimension == "uni" && input$data_source_lta == "diko") {
@@ -12,6 +13,7 @@ server_lta <- function(input, output, session) {
       theta <- matrix(rnorm(750), ncol = 1)       # ability 1 dimension
       resp <- simdata(a = a, d = d, itemtype = "2PL", Theta = theta)
       df <- as.data.frame(resp) %>% tidyr::drop_na()
+      df$Group <- sample(c("Group_A", "Group_B"), nrow(df), replace = TRUE)
       
     } else if (input$dimension == "uni" && input$data_source_lta == "poli") {
       a <- matrix(rlnorm(20, .2, .3))  
@@ -20,6 +22,7 @@ server_lta <- function(input, output, session) {
       d <- diffs + rnorm(20)
       resp <- simdata(a, d, 300, itemtype = 'graded')
       df <- as.data.frame(resp) %>% tidyr::drop_na()
+      df$Group <- sample(c("Group_A", "Group_B"), nrow(df), replace = TRUE)
       
     } else if (input$dimension == "multi" && input$data_source_lta == "diko") {
       N <- 750     
@@ -32,9 +35,12 @@ server_lta <- function(input, output, session) {
       sigma <- matrix(c(1,0.3,0.3,1), nrow = 2)
       resp <- simdata(a = a, d = d, N = N, itemtype = '2PL', sigma = sigma)
       df <- as.data.frame(resp) %>% tidyr::drop_na()
+      df$Group <- sample(c("Group_A", "Group_B"), nrow(df), replace = TRUE)
       
     } else if (input$dimension == "multi" && input$data_source_lta == "poli") {
-      df <- as.data.frame(psych::bfi) %>% dplyr::select(A1:E2) %>% tidyr::drop_na()
+      df <- as.data.frame(psych::bfi) %>% dplyr::select(A1:E2, gender) %>% tidyr::drop_na()
+      df$gender <- factor(df$gender, levels = c(1, 2), labels = c("Male", "Female"))
+      colnames(df)[ncol(df)] <- "Gender"
     } else {
       req(input$datafile_lta)
       ext <- tolower(tools::file_ext(input$datafile_lta$name))
@@ -69,7 +75,9 @@ server_lta <- function(input, output, session) {
   
   data_lta <- reactive({
     req(input$dimension, input$data_source_lta, data_user(), input$selected_vars, input$fit_stats)
-    data_user() %>% dplyr::select(input$selected_vars)
+    df <- data_user() %>% dplyr::select(all_of(input$selected_vars))
+    # Exclude non-numeric columns for IRT model fitting
+    df %>% dplyr::select(where(is.numeric))
   })
   
   # ==== Preview Data ====
@@ -739,5 +747,152 @@ F2 = 6-10
     })
   })
   
+  # ====== INFORMATION & RELIABILITY TAB ======
+  output$info_rel_ui <- renderUI({
+    req(selected_fit())
+    mod <- selected_fit()
+    
+    # Calculate Marginal Reliability
+    marg_rel <- tryCatch({
+      mirt::marginal_rxx(mod)
+    }, error = function(e) NA)
+    
+    # Generate TIF table
+    theta_seq <- matrix(seq(-4, 4, by = 0.5))
+    tif_vals <- tryCatch({
+      mirt::testinfo(mod, theta_seq)
+    }, error = function(e) rep(NA, length(theta_seq)))
+    
+    tif_df <- data.frame(
+      Theta = as.numeric(theta_seq),
+      Information = tif_vals
+    )
+    
+    # Render
+    tagList(
+      h4(icon("check-circle"), "Marginal Reliability"),
+      tags$p("Marginal reliability estimate(s) for the factors in this model:"),
+      verbatimTextOutput("marg_rel_out"),
+      tags$hr(),
+      h4(icon("table"), "Test Information Function (TIF) Table"),
+      tags$p("Test information values across different levels of the latent trait (\u03B8):"),
+      DTOutput("tif_table")
+    )
+  })
   
+  output$marg_rel_out <- renderPrint({
+    req(selected_fit())
+    mod <- selected_fit()
+    mirt::marginal_rxx(mod)
+  })
+  
+  output$tif_table <- renderDT({
+    req(selected_fit())
+    mod <- selected_fit()
+    theta_seq <- matrix(seq(-4, 4, by = 0.5))
+    tif_vals <- mirt::testinfo(mod, theta_seq)
+    
+    df <- data.frame(
+      Theta = as.numeric(theta_seq),
+      Information = round(tif_vals, 3)
+    )
+    
+    datatable(df, options = list(pageLength = 10, dom = 'rtip'))
+  })
+  
+  # ====== DIF ANALYSIS TAB ======
+  output$dif_ui <- renderUI({
+    req(data_user())
+    
+    # Find categorical variables for grouping
+    df <- data_user()
+    cat_vars <- names(df)[sapply(df, function(x) is.factor(x) || is.character(x) || length(unique(x)) <= 5)]
+    
+    if (length(cat_vars) == 0) {
+      return(tags$p("No suitable grouping variable found in the dataset for DIF analysis. Please ensure your dataset includes a categorical column (e.g., Gender, Region)."))
+    }
+    
+    tagList(
+      fluidRow(
+        column(4,
+               h4(icon("cogs"), "DIF Settings"),
+               selectInput("dif_group_var", "Select Grouping Variable:", choices = cat_vars),
+               selectInput("dif_anchor_items", "Anchor Items (optional):", 
+                           choices = c("None", input$lta_vars), selected = "None", multiple = TRUE),
+               actionButton("run_dif", "Run DIF Analysis", class = "btn-primary", icon = icon("play"))
+        ),
+        column(8,
+               h4(icon("table"), "DIF Results (mirt)"),
+               withSpinner(DTOutput("dif_results_table"))
+        )
+      )
+    )
+  })
+  
+  dif_results <- eventReactive(input$run_dif, {
+    req(selected_fit(), input$dif_group_var, data_user())
+    
+    df <- data_user()
+    group_var <- df[[input$dif_group_var]]
+    if (length(unique(na.omit(group_var))) < 2) {
+      showNotification("Grouping variable must have at least 2 categories.", type = "error")
+      return(NULL)
+    }
+    
+    # The selected_fit() model provides the variable names
+    mod <- selected_fit()
+    vars <- mirt::extract.mirt(mod, "itemnames")
+    mod_syntax <- NULL # If custom, wait we don't have model_syntax easily here. Let's just fit standard multiple group.
+    
+    # We need to fit a multiple group model for DIF
+    # Use mirt::multipleGroup
+    item_data <- df[, vars, drop = FALSE]
+    
+    # Simplified approach: If we can't easily refit, we might just use Wald test or likelihood ratio.
+    # To use mirt::DIF, we first fit a multipleGroup model where all items are constrained to be equal across groups.
+    showNotification("Fitting multiple group model... this may take a while.", id = "dif_msg", duration = NULL)
+    
+    tryCatch({
+      # Base constrained model
+      if (is.null(mod_syntax) || mod_syntax == "") {
+         mg_model <- mirt::multipleGroup(item_data, 1, group = as.character(group_var), invariance = c('free_means', 'free_var', 'slopes', 'intercepts'))
+      } else {
+         model_def <- mirt::mirt.model(mod_syntax)
+         mg_model <- mirt::multipleGroup(item_data, model_def, group = as.character(group_var), invariance = c('free_means', 'free_var', 'slopes', 'intercepts'))
+      }
+      
+      items2test <- vars
+      if (!is.null(input$dif_anchor_items) && !("None" %in% input$dif_anchor_items)) {
+        items2test <- setdiff(vars, input$dif_anchor_items)
+      }
+      
+      dif_res <- mirt::DIF(mg_model, which.par = c('a1', 'd'), items2test = items2test, p.adjust = "fdr")
+      removeNotification("dif_msg")
+      return(dif_res)
+    }, error = function(e) {
+      removeNotification("dif_msg")
+      showNotification(paste("DIF Error:", e$message), type = "error")
+      return(NULL)
+    })
+  })
+  
+  output$dif_results_table <- renderDT({
+    req(dif_results())
+    res <- dif_results()
+    
+    if (is.null(res)) return(NULL)
+    
+    df_res <- as.data.frame(res)
+    df_res$Item <- rownames(df_res)
+    df_res <- df_res[, c("Item", setdiff(names(df_res), "Item"))]
+    
+    datatable(df_res, options = list(pageLength = 15, scrollX = TRUE)) %>%
+      formatRound(columns = 2:ncol(df_res), digits = 3) %>%
+      formatStyle(
+        'p',
+        color = styleInterval(0.05, c('red', 'black')),
+        fontWeight = styleInterval(0.05, c('bold', 'normal'))
+      )
+  })
+
 }

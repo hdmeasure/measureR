@@ -1,6 +1,6 @@
 Package: measureR
 Title: Tools for Educational and Psychological Measurement
-Version: 0.0.2
+Version: 0.0.3
 Authors@R:
     c(
       person(
@@ -9,9 +9,15 @@ Authors@R:
         email = "hasandjidu@gmail.com",
         role = c("aut", "cre"),
         comment = c(ORCID = "0000-0003-1110-6815")
+      ),
+      person(
+        given = "Heri",
+        family = "Retnawati",
+        role = "ctb",
+        comment = c(ORCID = "0000-0002-1792-5873")
       )
     )
-Description: 'Provides an interactive toolkit for educational and psychological measurement implemented using the 'shiny' framework. The package supports content validity analysis, dimensionality assessment, and Classical Test Theory using the 'CTT' package (Willse, 2018) <doi:10.32614/CRAN.package.CTT>.Item Response Theory (IRT) analyses are conducted via 'mirt' (Chalmers, 2012) <doi:10.18637/jss.v048.i06>. Exploratory Factor Analysis is performed using 'psych' (Revelle, 2025), while Confirmatory Factor Analysis and Structural Equation Modeling are based on the 'lavaan' framework (Rosseel, 2012) <doi:10.18637/jss.v048.i02>. The application allows users to upload data, evaluate statistical models, visualize results, and export outputs through an intuitive graphical interface without requiring programming experience.
+Description: 'Provides an interactive toolkit for educational and psychological measurement implemented using the 'shiny' framework. The package supports content validity analysis, dimensionality assessment, and Classical Test Theory using the 'CTT' package (Willse, 2018) <doi:10.32614/CRAN.package.CTT>. Item Response Theory (IRT) analyses are conducted via 'mirt' (Chalmers, 2012) <doi:10.18637/jss.v048.i06>. Exploratory Factor Analysis is performed using 'psych' (Revelle, 2025), while Confirmatory Factor Analysis (CFA) and Structural Equation Modeling (SEM) are based on the 'lavaan' framework (Rosseel, 2012) <doi:10.18637/jss.v048.i02>. The CFA/SEM module features interactive model specification, automatic model comparison, modification indices, comprehensive fit diagnostics, path diagram visualization, and HTML report generation. The application allows users to upload data, evaluate statistical models, visualize results, and export outputs through an intuitive graphical interface without requiring programming experience.
 License: MIT + file LICENSE
 Depends:
     R (>= 4.0.0)
@@ -22,17 +28,28 @@ Imports:
     data.table,
     dplyr,
     DT,
+    flextable,
     ggplot2,
+    haven,
+    kableExtra,
+    knitr,
     lavaan,
+    magick,
+    irr,
     mirt,
+    officer,
     psych,
     purrr,
     readr,
     readxl,
     rlang,
+    rmarkdown,
+    scales,
     semPlot,
     semptools,
     shiny,
+    shinyBS,
+    shinycssloaders,
     shinyWidgets,
     stats,
     stringr,
@@ -41,9 +58,7 @@ Imports:
     tidyverse,
     viridisLite
 Suggests:
-    knitr,
     pkgdown,
-    rmarkdown,
     testthat (>= 3.0.0)
 LazyData: false
 Roxygen: list(markdown = TRUE)

@@ -499,5 +499,52 @@ server_contentval <- function(input, output, session) {
     )
   })
   
+  # =====================================
+  # Inter-Rater Reliability
+  # =====================================
+  output$fleiss_kappa_out <- renderPrint({
+    req(data_cv(), input$id_col)
+    df <- data_cv()
+    expert_cols <- setdiff(names(df), input$id_col)
+    
+    mat <- as.matrix(df[, expert_cols])
+    if(ncol(mat) < 2) return(cat("Need at least 2 experts.\n"))
+    
+    tryCatch({
+      fk <- irr::kappam.fleiss(mat)
+      print(fk)
+    }, error = function(e) {
+      cat("Error calculating Fleiss' Kappa: ", e$message, "\n")
+    })
+  })
+  
+  output$icc_out <- renderPrint({
+    req(data_cv(), input$id_col)
+    df <- data_cv()
+    expert_cols <- setdiff(names(df), input$id_col)
+    
+    mat <- as.matrix(df[, expert_cols])
+    if(ncol(mat) < 2) return(cat("Need at least 2 experts.\n"))
+    
+    tryCatch({
+      res_icc <- irr::icc(mat, model = "twoway", type = "agreement", unit = "average")
+      print(res_icc)
+    }, error = function(e) {
+      cat("Error calculating ICC: ", e$message, "\n")
+    })
+  })
+  
+  output$agreement_heatmap <- renderPlot({
+    req(data_long())
+    df_long <- data_long()
+    
+    library(ggplot2)
+    ggplot(df_long, aes(x = expert, y = item_id, fill = as.numeric(score))) +
+      geom_tile(color = "white") +
+      scale_fill_viridis_c(name = "Score") +
+      theme_minimal() +
+      labs(x = "Expert", y = "Item ID", title = "Expert Agreement Heatmap") +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  })
   
 }

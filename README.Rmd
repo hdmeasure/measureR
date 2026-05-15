@@ -5,7 +5,7 @@ output: github_document
 # measureR <img src="man/figures/logomeasureR.png" align="right" width="120" />
 <!-- badges: start -->
 
-[![CRAN status](https://www.r-pkg.org/badges/version/measureR)](https://CRAN.R-project.org/package=measureR)
+[![CRAN status](https://www.r-pkg.org/badges/version/measureR)](https://CRAN.R-project.org/package=measureR) 
 [![CRAN release](https://www.r-pkg.org/badges/last-release/measureR)](https://CRAN.R-project.org/package=measureR)
 [![Downloads](https://cranlogs.r-pkg.org/badges/measureR)](https://cranlogs.r-pkg.org/badges/measureR)
 [![Total Downloads](https://cranlogs.r-pkg.org/badges/grand-total/measureR)](https://cranlogs.r-pkg.org/badges/grand-total/measureR)

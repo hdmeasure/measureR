@@ -1,4 +1,5 @@
-# fa_ui.R (revisi)
+# cfa_ui.R — measureR CFA/SEM Module UI
+# Backported from projectLSA 0.1.0 with measureR branding
 cfa_ui <- function(project) {
   fluidRow(
     column(width = 3,
@@ -11,8 +12,10 @@ cfa_ui <- function(project) {
              br(),
              selectInput("data_source", "Select Data Source:",
                          choices = c("Upload Data" = "upload",
-                                     "Built-in: bfi" = "bfi",
-                                     "Built-in: HolzingerSwineford1939" = "HolzingerSwineford1939"),
+                                     "Built-in: bfi (CFA/EFA)" = "bfi",
+                                     "Built-in: HolzingerSwineford1939 (MGCFA/CFA)" = "HolzingerSwineford1939",
+                                     "Built-in: PoliticalDemocracy (SEM)" = "PoliticalDemocracy",
+                                     "Built-in: Demo.growth (LGM)" = "Demo.growth"),
                          selected = "upload"),
              conditionalPanel(condition = "input.data_source == 'upload'",
                               fileInput("datafile", "Upload Data (csv/xlsx)", accept = c(".csv", ".xlsx"))),
@@ -22,27 +25,51 @@ cfa_ui <- function(project) {
              uiOutput("cfa_model_ui"),
             
              selectInput("cfa_estimator", "Estimator:",
-                         choices = c("ML" = "ML", "MLR" = "MLR", "WLSMV" = "WLSMV", 
-                                     "DWLS" = "DWLS", "GLS" = "GLS", "ULS" = "ULS"),
+                         choices = c("ML" = "ML", "GLS" = "GLS", "WLS" = "WLS", 
+                                     "DWLS" = "DWLS", "ULS" = "ULS", "DLS" = "DLS", 
+                                     "PML" = "PML", "MLM" = "MLM", "MLMVS" = "MLMVS", 
+                                     "MLMV" = "MLMV", "MLF" = "MLF", "MLR" = "MLR", 
+                                     "WLSM" = "WLSM", "WLSMVS" = "WLSMVS", "WLSMV" = "WLSMV", 
+                                     "ULSM" = "ULSM", "ULSMVS" = "ULSMVS", "ULSMV" = "ULSMV"),
                          selected = "ML"),
              selectInput("cfa_missing", "Missing data:",
                          choices = c("Listwise" = "listwise", "Pairwise" = "pairwise", "FIML" = "fiml"),
                          selected = "listwise"),
+             radioButtons("cfa_dec_sep", "Decimal Separator:", 
+                          choices = c("Dot (.)" = ".", "Comma (,)" = ","),
+                          selected = ".", inline = TRUE),
              checkboxInput("cfa_std_est", "Standardized estimates", TRUE),
              checkboxInput("htmt_opt", "Heterotrait–Monotrait Ratio (HTMT)", FALSE),
              
-             actionButton("run_cfa", label = tagList(icon("play"), "Run CFA"),
+             bsCollapse(id = "cfa_advanced_opts",
+               bsCollapsePanel("Advanced Analysis (MGCFA/LGM)", style = "info",
+                 selectInput("cfa_analysis_mode", "Analysis Mode:",
+                             choices = c("Standard CFA/SEM" = "standard",
+                                         "Multi-group CFA" = "mgcfa",
+                                         "Latent Growth Model" = "lgm")),
+                 conditionalPanel("input.cfa_analysis_mode == 'mgcfa'",
+                   uiOutput("mgcfa_group_ui"),
+                   selectInput("mgcfa_invariance", "Invariance Level:",
+                               choices = c("Configural" = "configural",
+                                           "Metric (Weak)" = "loadings",
+                                           "Scalar (Strong)" = "loadings, intercepts",
+                                           "Strict" = "loadings, intercepts, residuals")),
+                   tags$hr(style="margin-top:10px; margin-bottom:10px;"),
+                   tags$p(style="font-size:11px; color:#666;", "Or run all levels to compare:"),
+                   actionButton("run_auto_invariance", "Auto Invariance Test", class = "btn-info btn-block btn-sm", style="width:100%;")
+                 ),
+                 conditionalPanel("input.cfa_analysis_mode == 'lgm'",
+                   tags$p(style="font-size:11px; color:#666;", 
+                          "Note: LGM uses lavaan::growth(). Ensure your syntax defines intercept (i) and slope (s) factors.")
+                 )
+               )
+             ),
+             
+             actionButton("run_cfa", label = tagList(icon("play"), "Run CFA/SEM"),
                           class = "btn btn-success btn-block",
                           style = "width: 100% !important;"),
              br(),
-             tags$h5("Exports", style = "color: #2c3e50;"),
-             downloadButton("download_measures", "Fit Measures (CSV)", class = "btn btn-primary btn-sm"),
-             br(),
-             downloadButton("download_loadings", "Loadings (CSV)", class = "btn btn-primary btn-sm"),
-             br(),
-             downloadButton("download_lavaan", "Lavaan Summary (txt)", class = "btn btn-primary btn-sm"),
-             br(),
-             downloadButton("download_scores_cfa", "Factor Score (CSV)", class = "btn btn-primary btn-sm"),
+             actionButton("btn_export_modal", "Export Report (HTML)", class = "btn btn-warning btn-block btn-glow", style = "width: 100%; font-weight: bold;", onclick="$(this).removeClass('btn-glow');")
            )
     ), 
     column(width = 9,
@@ -66,87 +93,111 @@ cfa_ui <- function(project) {
                br(), DTOutput("loadings_table")
                ),
              tabPanel(
+               title = tagList(icon("chart-bar"), "Variances"),
+               br(), 
+               uiOutput("variance_warning"),
+               DTOutput("variances_table")
+               ),
+             tabPanel(
                title = tagList(icon("calculator"), "Factor Scores"),
                br(),
                DTOutput("fscores_cfa")
                ),
+             tabPanel(
+               title = tagList(icon("users"), "Measurement Invariance"),
+               value = "invariance_tab_cfa",
+               br(),
+               uiOutput("invariance_results")
+             ),
             # ====Plot =====
              tabPanel(
                title = tagList(icon("project-diagram"), "Path Plot"),
                       br(),
                       fluidRow(
-                        column(4,
-                               tags$h5("Plot Settings", style = "color: #2c3e50;"),
-    
-                               column(6,
-                               numericInput("plotwidth", "Plot Width:", value = 5, min = 1, max = 15, step = 0.3,
-                                            width = "100%")),
-                               column(6,
-                               numericInput("plotheight", "Plot Height:", value = 5, min = 1, max = 20, step = 0.3,
-                                            width = "100%")),
-                               column(6,
-                               selectInput("plot_style", "Style:",
-                                           choices = c("lisrel", "ram", "mx", "OpenMx"),
-                                           selected = "lisrel")),
-                               column(6,
-                               selectInput("plot_layout", "Layout:",
-                                           choices = c("tree", "tree2", "tree3", "spring", "circle", "circle2"),
-                                           selected = "tree2")),
-                               column(4,
-                               numericInput("plot_rotation", "Rotation:", value = 4, min = 1, max = 4, step = 1, 
-                                            width = "100%")),
-                               column(8,
-                               textInput("bifactor", "Bfactor:", value = NULL, placeholder = "General Factor (Bifactor Model Only)",
-                                         width = "100%")),
-                               tags$hr(),
-                               tags$h6("Node Sizes", style = "color: #2c3e50;"),
-                               fluidRow(
-                                 column(4, numericInput("plot_nodesize_lat", "Lat:", value = 5, min = 3, max = 15, step = 0.3,
-                                                        width = "100%")),
-                                 column(4, numericInput("plot_nodesize_man", "Man_width:", value = 5, min = 2, max = 10, step = 0.3,
-                                                        width = "100%")),
-                                 column(4, numericInput("plot_nodesize_man2", "Man_heigth:", value = 2.5, min = 1, max = 10, step = 0.3,
-                                                        width = "100%"))
-                               ),
-                               column(6,
-                                      numericInput("plot_edge_label_size", "Label size:", value = 0.75, min = 0.5, max = 2, step = 0.1,
-                                                   width = "100%")),
-                               column(6,
-                                      numericInput("edgewidth", "Edge Width:", value = 0.3, min = 0.3, max = 5, step = 0.1,
-                                                   width = "100%")),
-                               
-                               tags$hr(),
-                               tags$h5("Display Options", style = "color: #2c3e50;"),
-                               checkboxInput("plot_standardized", "Standardized estimates", TRUE),
-                               checkboxInput("plot_residuals", "Show residuals", FALSE),
-                               checkboxInput("plot_exoCov", "Show exogenous covariances", FALSE),
-                               tags$hr(),
-                               # Di bagian UI - tambahkan di panel Colors
-                               tags$h6("Colors", style = "color: #2c3e50;"),
-                               selectInput("plot_color_scheme", "Color scheme:",
-                                           choices = c("Blue-Yellow",
-                                                       "Ocean",
-                                                       "Forest", "Rainbow", "Custom"),
-                                           selected = "Blue-Yellow"),
-                               
-                               conditionalPanel(
-                                 condition = "input.plot_color_scheme == 'Custom'",
-                                 fluidRow(
-                                   column(6, 
-                                          colourpicker::colourInput("mancolour", "Manifest:", value = "#A1E3F9",
-                                                                    showColour = "background", palette = "square")
+                        column(3,
+                        bsCollapse(
+                          id = "plot_settings",
+                          
+                          bsCollapsePanel( style = 'info',
+                                           "1. General & Layout",
+                                     fluidRow(
+                                       column(12, selectInput("plot_model_scope", "Display Scope:", 
+                                                              choices = c("Full Model (Measurement + Structural)" = "full", 
+                                                                          "Structural Model Only" = "structural"), 
+                                                              selected = "full"))
+                                     ),
+                                     fluidRow(
+                                       column(6, selectInput("plot_style", "Style:", choices = c("lisrel", "ram", "mx", "OpenMx"), selected = "lisrel")),
+                                       column(6, selectInput("plot_layout", "Layout:", choices = c("tree", "tree2", "tree3", "spring", "circle", "circle2"), selected = "tree2"))
+                                     ),
+                                   fluidRow(
+                                     column(6, numericInput("plotwidth", "Width:", value = 5, min = 1, max = 15, step = 0.3)),
+                                     column(6, numericInput("plotheight", "Height:", value = 5, min = 1, max = 20, step = 0.3))
                                    ),
-                                   column(6,
-                                          colourpicker::colourInput("latcolour", "Latent:", value = "#FFFFBA",
-                                                                    showColour = "background", palette = "square")
+                                   
+                                   fluidRow(
+                                     column(6, numericInput("plot_rotation", "Rotation:", value = 4, min = 1, max = 4, step = 1)),
+                                     column(6, textInput("bifactor", "Bfactor:", value = NULL, placeholder = "Gen. Factor"))
                                    )
-                                 )
-                               )
-                               
+                                 ),
+                                 
+                          bsCollapsePanel( style = 'info',
+                                           "2. Node & Edge Sizes",
+                                   fluidRow(
+                                     column(4, numericInput("plot_nodesize_lat", "Latent:", value = 8, min = 1, max = 15, step = 0.2)),
+                                     column(4, numericInput("plot_nodesize_man", "Obs(W):", value = 8, min = 1, max = 15, step = 0.2)),
+                                     column(4, numericInput("plot_nodesize_man2", "Obs(H):", value = 4, min = 0.1, max = 10, step = 0.1))
+                                   ),
+                                   fluidRow(
+                                     column(6, numericInput("plot_edge_label_size", "Label Size:", value = 0.75, min = 0.2, max = 2, step = 0.05)),
+                                     column(6, numericInput("edgewidth", "Edge Width:", value = 0.3, min = 0.1, max = 5, step = 0.05))
+                                   )
+                                 ),
+                          bsCollapsePanel( style = 'info',
+                                           "3. Measurement Model",
+                                   checkboxInput("plot_curve", "Curve", TRUE),
+                                   checkboxInput("plot_layout_split", "Split Layout", FALSE),
+                                   
+                                   fluidRow(
+                                     column(6, numericInput("subScale_Wi", "Sub_Wid:", value = 0.2, min = 0.2, max = 3, step = 0.1)),
+                                     column(6, numericInput("subScale_He", "Sub_Hei:", value = 0.2, min = 0.2, max = 3, step = 0.1))
+                                   )
+                                 ),
+                          bsCollapsePanel( style = 'info',
+                                           "4. Colors & Display Options",
+                                   selectInput("plot_color_scheme", "Color scheme:",
+                                               choices = c("Blue-Yellow", "Ocean", "Forest", "Rainbow", "Pastel", "Greyscale", "Earth", "Vibrant", "Monochrome", "Sunset", "Rose", "Mint", "Custom"),
+                                               selected = "Blue-Yellow"),
+                                   conditionalPanel(
+                                     condition = "input.plot_color_scheme == 'Custom'",
+                                     fluidRow(
+                                       column(6, colourpicker::colourInput("mancolour", "Manifest:", value = "#A1E3F9", showColour = "background", palette = "square")),
+                                       column(6, colourpicker::colourInput("latcolour", "Latent:", value = "#FFFFBA", showColour = "background", palette = "square"))
+                                     )
+                                   ),
+                                   checkboxInput("plot_standardized", "Standardized estimates", TRUE),
+                                   checkboxInput("plot_residuals", "Show residuals", FALSE),
+                                   checkboxInput("plot_exoCov", "Show exogenous covariances", FALSE)
+                                 ),
+                          bsCollapsePanel( style = 'info',
+                                           "5. Fit Indices",
+                                           div(style = "text-align: center;",
+                                               
+                                           checkboxGroupInput(
+                                             "fit_indices_selected",
+                                             label = NULL,
+                                             choices = c("Chi-Square (χ²)" = "chisq", "df" = "df", "p-value" = "pvalue", "RMSEA" = "rmsea", "CFI" = "cfi", "GFI" = "gfi", "SRMR" = "srmr", "TLI" = "tli", "NFI" = "nfi"),
+                                             selected = c("chisq", "df", "pvalue", "rmsea", "cfi", "srmr"),
+                                             inline = TRUE
+                                           )
+                                           )
+                          )
+                        )
                         ),
-                        column(8, 
-                               plotOutput("path_plot", height = "700px"),
-                               uiOutput("plot_fit_info")
+                        column(9, 
+                               downloadButton("download_cfa_plot", "Download Plot (PNG)", class = "btn btn-primary btn-glow"),
+                               br(),
+                               plotOutput("path_plot", height = "700px")
                         )
                       )),
              # --- About ----
@@ -167,6 +218,14 @@ cfa_ui <- function(project) {
                         "Dr. Hasan Djidu, M.Pd."),
                       tags$br(),
                       "Universitas Sembilanbelas November Kolaka"
+                    ),
+                    tags$p(
+                      tags$a(
+                        href = "https://scholar.google.com/citations?user=24m-AysAAAAJ&hl=id",
+                        target = "_blank",
+                        "Prof. Dr. Heri Retnawati, M.Pd."),
+                      tags$br(),
+                      "Universitas Negeri Yogyakarta"
                     ),
                     tags$a("hasandjidu@gmail.com"),
                     tags$hr()

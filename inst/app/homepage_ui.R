@@ -27,14 +27,24 @@ homepage_ui <- function() {
                 "supporting content validity, dimensionality analysis, classical test theory (CTT), ",
                 "and item response theory (IRT) through an intuitive graphical interface."
               ),
+              # HTML(
+              #   "<strong>How to Cite:</strong><br>
+              #    Djidu, et al (2026).
+              #    <em>measureR: Shiny application for educational and psychological measurement</em>.
+              #    GitHub repository.<br>
+              #    <a href='https://github.com/hdmeasure/measureR' target='_blank'>
+              #    https://github.com/hdmeasure/measureR
+              #    </a>"
+              # )
               HTML(
-                "<strong>How to Cite:</strong><br>
-                 Djidu, H. (2026).
-                 <em>measureR: Shiny application for educational and psychological measurement</em>.
-                 GitHub repository.<br>
-                 <a href='https://github.com/hdmeasure/measureR' target='_blank'>
-                 https://github.com/hdmeasure/measureR
-                 </a>"
+                '
+                 <strong>How to Cite:</strong><br>
+                 <strong>In-text citation:</strong>
+                <span style="color:#2563eb;">(Djidu et al., 2026)</span><br><br>
+                <strong>Reference:</strong><br>
+                 Djidu, H., Retnawati, H (2026). <em>measureR: Shiny application for educational and psychological measurement</em>. 
+                 <a href="https://doi.org/10.32614/CRAN.package.measureR" target="_blank" style="color: #0077dd;">https://doi.org/10.32614/CRAN.package.measureR</a>. R package.
+                 </div>'
               )
             )
         ),
@@ -83,12 +93,12 @@ homepage_ui <- function() {
             div(class = "project-title", "Dimensionality & Assumptions"),
             div(class = "project-desc",
                 "Evaluation of latent structure and measurement assumptions ",
-                "through EFA, CFA"
+                "through EFA, CFA, & SEM"
             ),
             
             div(style = "display:flex; gap:8px; width:100%;",
                 actionButton("go_efa", "EFA", class = "btn-pill", style="width:50%"),
-                actionButton("go_cfa", "CFA", class = "btn-pill", style="width:50%")
+                actionButton("go_cfa", "CFA / SEM", class = "btn-pill", style="width:50%")
             )
         ),
         

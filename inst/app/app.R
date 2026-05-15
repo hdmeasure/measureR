@@ -35,6 +35,8 @@ library(ggplot2)
 library(stringr)
 library(tidyverse)
 library(tidyr)
+library(shinyBS)
+library(haven)
 options(shiny.maxRequestSize = 300 * 1024^2)  # 300 MB
 
 # ===== UI =====
@@ -59,14 +61,12 @@ server <- function(input, output, session) {
         HTML(
           "
         If you use this application in academic or research work, please cite it as follows:<br>
-        
-        <strong>In-text citation:</strong>
-        <span style='color:#2563eb;'>(Djidu, 2026)</span><br>
-        
-        <strong>Reference:</strong><br>
-        Djidu, H. (2026).
+         <strong>In-text citation:</strong>
+         <span style='color:#2563eb;'>(Djidu & Retnawati, 2026)</span><br><br>
+         <strong>Reference:</strong><br>
+         Djidu, H., &amp; Retnawati, H. (2026).
         <em>measureR: Tools for educational and psychological measurement</em>.
-        R package (Version 0.0.1).
+        R package (Version 0.0.3).
         Available at:
         <a href='https://github.com/hdmeasure/measureR' target='_blank'>
         https://github.com/hdmeasure/measureR</a>.

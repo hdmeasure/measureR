@@ -107,7 +107,16 @@ lta_ui <- function(project) {
       tabPanel(
         title=tagList(icon("brain"), "Factor Scores"),
         column(12, uiOutput('fscoreLTA') )
-        
+      ),
+      tabPanel(
+        title = tagList(icon("info"), "Information & Reliability"),
+        value = "info_rel_tab",
+        uiOutput("info_rel_ui")
+      ),
+      tabPanel(
+        title = tagList(icon("people-arrows"), "DIF Analysis"),
+        value = "dif_tab",
+        uiOutput("dif_ui")
       ),
       # ===== INFO ======
       tabPanel(
@@ -127,6 +136,14 @@ lta_ui <- function(project) {
                   "Dr. Hasan Djidu, M.Pd."),
                 tags$br(),
                 "Universitas Sembilanbelas November Kolaka"
+              ),
+              tags$p(
+                tags$a(
+                  href = "https://scholar.google.com/citations?user=24m-AysAAAAJ&hl=id",
+                  target = "_blank",
+                  "Prof. Dr. Heri Retnawati, M.Pd."),
+                tags$br(),
+                "Universitas Negeri Yogyakarta"
               ),
               tags$a("hasandjidu@gmail.com"),
               tags$hr()
