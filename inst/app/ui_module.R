@@ -16,9 +16,9 @@ contentval_mod <- function(id, project){
   contentval_ui(project)
 }
 # LPT module ----
-lta_mod <- function(id, project){
+irt_mod <- function(id, project){
   ns <- NS(id)
-  lta_ui(project)
+  irt_ui(project)
 }
 # EFA module ----
 efa_mod <- function(id, project){

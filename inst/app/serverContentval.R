@@ -2,7 +2,7 @@
 # Content Validity Server
 # =========================================
 
-server_contentval <- function(input, output, session) {
+server_contentval <- function(input, output, session, ai_context, console_context) {
   
   library(dplyr)
   library(tidyr)
@@ -547,4 +547,83 @@ server_contentval <- function(input, output, session) {
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
   })
   
+  # Update global AI context whenever results change
+  observe({
+    res_text <- "Content Validity Results:\n"
+    
+    if (!is.null(aiken_result())) {
+      res_text <- paste(res_text, "\nAiken's V:\n", paste(capture.output(print(aiken_result()$df)), collapse = "\n"))
+    }
+    if (!is.null(cvr_result())) {
+      res_text <- paste(res_text, "\nCVR (Lawshe):\n", paste(capture.output(print(cvr_result())), collapse = "\n"))
+    }
+    if (!is.null(icvi_result())) {
+      res_text <- paste(res_text, "\nI-CVI and S-CVI:\n", 
+                        "I-CVI:\n", paste(capture.output(print(icvi_result())), collapse = "\n"),
+                        "\nS-CVI:\n", paste(capture.output(print(scvi_result())), collapse = "\n"))
+    }
+    
+    if (res_text == "Content Validity Results:\n") {
+      res_text <- ""
+    }
+    
+    ai_context$results_text <- res_text
+    ai_context$module <- "Content Validity"
+    
+    # R Console Output
+    console_out <- ""
+    if (res_text != "") {
+      console_out <- paste("==== Content Validity Analysis ====\n", res_text)
+    }
+    console_context$text <- console_out
+  })
+
+  addResourcePath("cv_reports", tempdir())
+  cv_report_path <- reactiveVal(NULL)
+  
+  observeEvent(input$cv_generate_preview, {
+    report_path <- file.path(system.file("app", package = "measureR"), "contentval_report.Rmd")
+    if (report_path == "" || !file.exists(report_path)) {
+      report_path <- "contentval_report.Rmd"
+    }
+    
+    tempReport <- file.path(tempdir(), "contentval_report.Rmd")
+    file.copy(report_path, tempReport, overwrite = TRUE)
+    
+    out_html <- file.path(tempdir(), "contentval_report_out.html")
+    
+    showModal(modalDialog("Generating Report Preview...", footer = NULL))
+    tryCatch({
+      rmarkdown::render(tempReport, output_file = out_html,
+        params = list(
+          console_out = console_context$text,
+          ai_summary = if (is.null(ai_context$ai_report_text)) "" else ai_context$ai_report_text,
+          aiken_res = aiken_result(),
+          cvr_res = cvr_result(),
+          icvi_res = icvi_result(),
+          scvi_res = scvi_result()
+        )
+      )
+      cv_report_path(out_html)
+    }, error = function(e) {
+      showNotification(paste("Error rendering report:", e$message), type = "error")
+    }, finally = {
+      removeModal()
+    })
+  })
+  
+  output$cv_report_preview_frame <- renderUI({
+    req(cv_report_path())
+    tags$iframe(src = "cv_reports/contentval_report_out.html", width = "100%", height = "800px", style = "border: none;")
+  })
+
+  output$download_report_cv <- downloadHandler(
+    filename = function() {
+      paste0("Content_Validity_Report_", Sys.Date(), ".html")
+    },
+    content = function(file) {
+      req(cv_report_path())
+      file.copy(cv_report_path(), file, overwrite = TRUE)
+    }
+  )
 }

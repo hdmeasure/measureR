@@ -1,7 +1,7 @@
 # Fungsi untuk menu Siswa
-lta_ui <- function(project) {
+irt_ui <- function(project) {
     tabsetPanel(
-      id = "main_tab_lta",
+      id = "main_tab_irt",
       
       # --- TAB 1: Prepare Data & Model ----
       tabPanel(
@@ -16,8 +16,8 @@ lta_ui <- function(project) {
                          class = "btn btn-danger btn-block",
                          style = "width: 100% !important;"),
             br(),
-            #uiOutput("data_source_lta_ui"),
-            selectInput("data_source_lta", 
+            #uiOutput("data_source_irt_ui"),
+            selectInput("data_source_irt", 
               "Select Data Source:",choices = c(
                 "UPLOAD DATA" = "upload",
                 "Built in Data: Dichotomous" = "diko",
@@ -25,8 +25,8 @@ lta_ui <- function(project) {
               selected = "upload"
             ),
             conditionalPanel(
-              condition = "input.data_source_lta == 'upload'",
-              fileInput("datafile_lta", "Upload Data (csv/xlsx)", accept = c(".csv", ".xlsx")),
+              condition = "input.data_source_irt == 'upload'",
+              fileInput("datafile_irt", "Upload Data/Workspace (csv/xlsx/sav/rds)", accept = c(".csv", ".xlsx", ".sav", ".rds")),
               selectInput("datatype", 
                           "Select Data Type:",
                           choices = c("Dicotomous" = "diko",
@@ -43,7 +43,7 @@ lta_ui <- function(project) {
             conditionalPanel(
               condition = "input.dimension == 'multi'",
               tags$label("Define Dimension Name & Item:"),
-              uiOutput("lta_model_ui")
+              uiOutput("irt_model_ui")
             ),
             selectInput("fit_stats", 
                         "Itemfit Stat:",
@@ -52,16 +52,18 @@ lta_ui <- function(project) {
                                     "X2*" = "X2*"),
                         selected = "S_X2"),
             
-            actionButton("run_lta",
-                         label = tagList(icon("play"), "Run LTA"), 
-                         class = "btn btn-success btn-block",
-                         style = "width: 100% !important;")
-
+            actionButton("run_irt",
+                         label = tagList(icon("play"), "Run IRT"), 
+                         class = "btn btn-success",
+                         style = "width: 100% !important; margin-bottom: 10px;"),
+            downloadButton("export_irt_rds", "Export Model (.rds)", 
+                           class = "btn btn-primary", 
+                           style = "width: 100% !important;")
           ),
           mainPanel(
             width = 9,
             h5(icon("table"), "Data Preview"),
-            DTOutput("data_preview_lta")
+            DTOutput("data_preview_irt")
           )
         )
       ),
@@ -118,6 +120,46 @@ lta_ui <- function(project) {
         value = "dif_tab",
         uiOutput("dif_ui")
       ),
+
+      tabPanel(
+        title = tagList(icon("file-import"), "Score New Data"),
+        sidebarLayout(
+          sidebarPanel(
+            width = 3,
+            h4("Score New Data"),
+            p("Upload new data to calculate factor scores using the fitted IRT/IRT model."),
+            downloadButton("download_irt_template", "Download Data Template (Excel)", class = "btn-info btn-block"),
+            br(),br(),
+            fileInput("irt_newdata", "Upload New Data (Excel/CSV)", accept = c(".csv", ".xlsx", ".xls")),
+            actionButton("irt_score_newdata_btn", "Calculate Scores", icon = icon("calculator"), class = "btn-success btn-block")
+          ),
+          mainPanel(
+            width = 9,
+            div(style = "text-align: right; margin-bottom: 5px;",
+                downloadButton("download_irt_newscores", "Download New Scores (.csv)", class = "btn-primary btn-sm")),
+            DTOutput("irt_newscores_table")
+          )
+        )
+      ),
+
+      # =====================================
+      # Report Preview
+      # =====================================
+      tabPanel(
+        title = tagList(icon("file-alt"), " Report Preview"),
+        column(12,
+               br(),
+               div(style = "display: flex; gap: 10px; margin-bottom: 15px;",
+                   actionButton("irt_generate_preview", tagList(icon("sync"), " Generate Report Preview"), class = "btn btn-success"),
+                   downloadButton("download_report_irt", "Download HTML Report", class = "btn btn-primary")
+               ),
+               div(
+                 style = "border: 1px solid #ddd; border-radius: 4px; padding: 5px; background: #f9f9f9;",
+                 uiOutput("irt_report_preview_frame")
+               )
+        )
+      ),
+      
       # ===== INFO ======
       tabPanel(
         title = tagList(icon("info-circle"), "About"),
@@ -152,7 +194,7 @@ lta_ui <- function(project) {
           column(
             width = 8, offset = 2,
             h4("References (R Packages)"),
-            uiOutput("package_references_lta"),
+            uiOutput("package_references_irt"),
             br(),
             div(
               style = "text-align:center;",

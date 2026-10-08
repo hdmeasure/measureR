@@ -41,12 +41,13 @@ ctt_ui <- function(project) {
           tags$hr(),
           uiOutput("item_select_ui_ctt"),
           
-          actionButton(
-            "run_ctt",
-            label = tagList(icon("play"), "Run CTT Analysis"),
-            class = "btn btn-success btn-block",
-            style = "width:100% !important;"
-          )
+          actionButton("run_ctt",
+                       label = tagList(icon("play"), "Run CTT Analysis"), 
+                       class = "btn btn-success",
+                       style = "width: 100% !important; margin-bottom: 10px;"),
+          downloadButton("export_ctt_rds", "Export Model (.rds)", 
+                         class = "btn btn-primary", 
+                         style = "width: 100% !important;")
         ),
         
         mainPanel(
@@ -198,6 +199,48 @@ ctt_ui <- function(project) {
             "Willse, J. T. (2018). <i>CTT: Classical Test Theory Functions</i> [R package]."
           ))
         )
+      )
+    ),
+    
+
+    tabPanel(
+      title = tagList(icon("file-import"), "Score New Data"),
+      sidebarLayout(
+        sidebarPanel(
+          width = 3,
+          h4("Score New Data"),
+          p("Upload new data to calculate scores using the CTT selected items."),
+          downloadButton("download_ctt_template", "Download Data Template (Excel)", class = "btn-info btn-block"),
+          br(),br(),
+          fileInput("ctt_newdata", "Upload New Data (Excel/CSV)", accept = c(".csv", ".xlsx", ".xls")),
+          actionButton("ctt_score_newdata_btn", "Calculate Scores", icon = icon("calculator"), class = "btn-success btn-block")
+        ),
+        mainPanel(
+          width = 9,
+          div(style = "text-align: right; margin-bottom: 5px;",
+              downloadButton("download_ctt_newscores", "Download New Scores (.csv)", class = "btn-primary btn-sm")),
+          DTOutput("ctt_newscores_table")
+        )
+      )
+    ),
+    
+
+    
+    # =====================================
+    # Report Preview
+    # =====================================
+    tabPanel(
+      title = tagList(icon("file-alt"), " Report Preview"),
+      column(12,
+             br(),
+             div(style = "display: flex; gap: 10px; margin-bottom: 15px;",
+                 actionButton("ctt_generate_preview", tagList(icon("sync"), " Generate Report Preview"), class = "btn btn-success"),
+                 downloadButton("download_report_ctt", "Download HTML Report", class = "btn btn-primary")
+             ),
+             div(
+               style = "border: 1px solid #ddd; border-radius: 4px; padding: 5px; background: #f9f9f9;",
+               uiOutput("ctt_report_preview_frame")
+             )
       )
     ),
     

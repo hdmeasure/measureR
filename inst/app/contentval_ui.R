@@ -55,7 +55,7 @@ contentval_ui <- function(project) {
               "1–6 Likert",
               "1–7 Likert"
             )
-          ),
+          )
         ),
         
         mainPanel(
@@ -190,6 +190,25 @@ contentval_ui <- function(project) {
                h4(icon("th"), "Agreement Heatmap"),
                plotOutput("agreement_heatmap")
         )
+      )
+    ),
+    
+
+    # =====================================
+    # Report Preview
+    # =====================================
+    tabPanel(
+      title = tagList(icon("file-alt"), " Report Preview"),
+      column(12,
+             br(),
+             div(style = "display: flex; gap: 10px; margin-bottom: 15px;",
+                 actionButton("cv_generate_preview", tagList(icon("sync"), " Generate Report Preview"), class = "btn btn-success"),
+                 downloadButton("download_report_cv", "Download HTML Report", class = "btn btn-primary")
+             ),
+             div(
+               style = "border: 1px solid #ddd; border-radius: 4px; padding: 5px; background: #f9f9f9;",
+               uiOutput("cv_report_preview_frame")
+             )
       )
     ),
     

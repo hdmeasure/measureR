@@ -121,8 +121,8 @@ homepage_ui <- function() {
         # =================================
         # 4️⃣ Item Response Theory (Bottom-Right)
         # =================================
-        div(class = "quad-card align-br", id = "card_lta",
-            onclick = "$('#go_lta').click();",
+        div(class = "quad-card align-br", id = "card_irt",
+            onclick = "$('#go_irt').click();",
             
             div(class = "project-icon",
                 tags$i(class = "fa-solid fa-brain")),
@@ -131,7 +131,7 @@ homepage_ui <- function() {
                 "Model-based estimation of item and person parameters ",
                 "for dichotomous and polytomous item responses."
             ),
-            actionButton("go_lta", "IRT", class = "btn-pill")
+            actionButton("go_irt", "IRT", class = "btn-pill")
         )
     ),
     

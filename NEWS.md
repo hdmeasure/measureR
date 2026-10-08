@@ -1,3 +1,29 @@
+# measureR 0.0.5
+
+This release moves directly from 0.0.3 to 0.0.5 (version 0.0.4 was not released).
+The application remains a **Shiny** app launched with `run_measureR()`.
+
+## New features
+
+* **AI assistant** in every module: ask free-form questions about the current
+  results or generate a results summary. Supports Google Gemini, OpenAI, Groq,
+  OpenRouter, and Anthropic; users supply their own API key in the Settings on
+  the homepage. Reference documents (including PDF) can be attached as context.
+* **R console panel**: a floating panel showing the R code behind each analysis,
+  so results can be reproduced and validated outside the app.
+* **HTML report export** for the Content Validity, CTT, EFA, CFA/SEM, and IRT
+  modules, with an optional AI-generated summary embedded in the report.
+* **IRT module** replaces the earlier LTA module, with item/test information
+  visualisation and Excel/RDS export of results.
+* **CFA/SEM**: variable aggregation (parceling) builder, scoring of new data,
+  robust fit-index option, editable model-comparison table, and a method guide.
+* Excel (`.xlsx`) export of results and data templates across modules.
+
+## Other changes
+
+* Added dependencies: `httr`, `jsonlite`, `pdftools`, `writexl`.
+* Updated the homepage and styling.
+
 # measureR 0.0.3
 
 * **CFA/SEM Module Major Upgrade:**

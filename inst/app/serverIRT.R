@@ -1,13 +1,13 @@
-# LTA -----
-# ==== Reactive Data LTA ====
-server_lta <- function(input, output, session) {
+# IRT -----
+# ==== Reactive Data IRT ====
+server_irt <- function(input, output, session, ai_context, console_context) {
   library(mirt)
   library(plotly)
   library(psych)
   library(shinycssloaders)
   data_user <- reactive({
-    req(input$dimension, input$data_source_lta)
-    if (input$dimension == "uni" && input$data_source_lta == "diko") {
+    req(input$dimension, input$data_source_irt)
+    if (input$dimension == "uni" && input$data_source_irt == "diko") {
       a <- matrix(runif(15, 0.8, 2), ncol = 1)      # discrimination 1 dimension
       d <- matrix(rnorm(15, 0, 1), ncol = 1)       # difficulty
       theta <- matrix(rnorm(750), ncol = 1)       # ability 1 dimension
@@ -15,7 +15,7 @@ server_lta <- function(input, output, session) {
       df <- as.data.frame(resp) %>% tidyr::drop_na()
       df$Group <- sample(c("Group_A", "Group_B"), nrow(df), replace = TRUE)
       
-    } else if (input$dimension == "uni" && input$data_source_lta == "poli") {
+    } else if (input$dimension == "uni" && input$data_source_irt == "poli") {
       a <- matrix(rlnorm(20, .2, .3))  
       diffs <- t(apply(matrix(runif(20*4, .3, 1), 20), 1, cumsum))
       diffs <- -(diffs - rowMeans(diffs))
@@ -24,7 +24,7 @@ server_lta <- function(input, output, session) {
       df <- as.data.frame(resp) %>% tidyr::drop_na()
       df$Group <- sample(c("Group_A", "Group_B"), nrow(df), replace = TRUE)
       
-    } else if (input$dimension == "multi" && input$data_source_lta == "diko") {
+    } else if (input$dimension == "multi" && input$data_source_irt == "diko") {
       N <- 750     
       n_items <- 15
       n_factors <- 2
@@ -37,74 +37,117 @@ server_lta <- function(input, output, session) {
       df <- as.data.frame(resp) %>% tidyr::drop_na()
       df$Group <- sample(c("Group_A", "Group_B"), nrow(df), replace = TRUE)
       
-    } else if (input$dimension == "multi" && input$data_source_lta == "poli") {
+    } else if (input$dimension == "multi" && input$data_source_irt == "poli") {
       df <- as.data.frame(psych::bfi) %>% dplyr::select(A1:E2, gender) %>% tidyr::drop_na()
       df$gender <- factor(df$gender, levels = c(1, 2), labels = c("Male", "Female"))
       colnames(df)[ncol(df)] <- "Gender"
     } else {
-      req(input$datafile_lta)
-      ext <- tolower(tools::file_ext(input$datafile_lta$name))
+      req(input$datafile_irt)
+      ext <- tolower(tools::file_ext(input$datafile_irt$name))
       showModal(modalDialog(title = NULL, "Reading Your File, Please wait...", footer = NULL, easyClose = FALSE))
-      df <- switch(
-        ext,
-        "csv"  = data.table::fread(input$datafile_lta$datapath,data.table = FALSE),
-        "xls"  = readxl::read_excel(input$datafile_lta$datapath),
-        "xlsx" = readxl::read_excel(input$datafile_lta$datapath),
-        "sav"  = haven::read_sav(input$datafile_lta$datapath),
-        "rds"  = readRDS(input$datafile_lta$datapath),
-        stop("Unsupported file type. Please upload CSV, Excel, SPSS (.sav), or RDS file.")
-      )
+      if (ext == "rds") {
+        res <- readRDS(input$datafile_irt$datapath)
+        if (is.list(res) && !is.data.frame(res) && identical(res$type, "measureR_workspace")) {
+          if (identical(res$module, "IRT")) {
+            # Restore Workspace State
+            irt_fit_list(res$irt_fit_list)
+            irt_fit_compare(res$irt_fit_compare)
+            irt_current_id(res$irt_current_id)
+            df <- res$raw_data
+            
+            # Restore UI Inputs
+            if (!is.null(res$input_state)) {
+              updateSelectInput(session, "data_source_irt", selected = res$input_state$data_source_irt)
+              updateSelectInput(session, "datatype", selected = res$input_state$datatype)
+              updateSelectInput(session, "dimension", selected = res$input_state$dimension)
+              updateSelectInput(session, "fit_stats", selected = res$input_state$fit_stats)
+              if (!is.null(res$input_state$irt_vars)) {
+                 shinyWidgets::updatePickerInput(session, "irt_vars", selected = res$input_state$irt_vars)
+              }
+              if (!is.null(res$input_state$itemtype)) {
+                 updateSelectInput(session, "itemtype", selected = res$input_state$itemtype)
+              }
+              if (!is.null(res$input_state$irt_mirt_model)) {
+                 updateTextAreaInput(session, "irt_mirt_model", value = res$input_state$irt_mirt_model)
+              }
+            }
+            
+            showNotification("IRT Workspace restored successfully!", type = "message")
+          } else {
+            stop("Uploaded workspace belongs to a different module: ", res$module)
+          }
+        } else if (inherits(res, "SingleGroupClass") || inherits(res, "MultipleGroupClass")) {
+          irt_fit_list(list(list(id = "model_1", model = res, type = "Uploaded Model", timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S"))))
+          irt_current_id("model_1")
+          df <- as.data.frame(res@Data$data)
+          showModal(modalDialog("IRT Model uploaded successfully! Please navigate to the Summary or Plot tab.", easyClose = TRUE))
+        } else {
+          df <- res
+        }
+      } else {
+        df <- switch(
+          ext,
+          "csv"  = data.table::fread(input$datafile_irt$datapath, data.table = FALSE),
+          "xls"  = readxl::read_excel(input$datafile_irt$datapath),
+          "xlsx" = readxl::read_excel(input$datafile_irt$datapath),
+          "sav"  = haven::read_sav(input$datafile_irt$datapath),
+          stop("Unsupported file type. Please upload CSV, Excel, SPSS (.sav), or RDS file.")
+        )
+      }
       removeModal()
-      df <- df %>% mutate(across(everything(), ~ifelse(.x == "", NA, .x)),
-                          id_auto = paste0("id_", sprintf("%04d", 1:n())))
+      
+      if (!"id_auto" %in% names(df)) {
+        df <- df %>% mutate(across(everything(), ~ifelse(.x == "", NA, .x)),
+                            id_auto = paste0("id_", sprintf("%04d", 1:n())))
+      }
     }
     return(df)
   })
   output$id_select_ui <- renderUI({
-    req(data_user(), input$dimension, input$data_source_lta)
+    req(data_user(), input$dimension, input$data_source_irt)
     selectizeInput("id_cols", "ID columns (optional)", choices = names(data_user()), multiple = TRUE,
                    selected = names(data_user())[grepl("id", names(data_user()), ignore.case = TRUE)])
   })
   output$var_select_ui <- renderUI({
-    req(data_user(), input$dimension, input$data_source_lta)
+    req(data_user(), input$dimension, input$data_source_irt)
     all_vars <- names(data_user())
     id_cols <- input$id_cols
     choices <- setdiff(all_vars, id_cols)
-    selectInput("selected_vars", "Select Variables (used for LTA):", choices = choices, multiple = TRUE, selected = choices)
+    selectInput("selected_vars", "Select Variables (used for IRT):", choices = choices, multiple = TRUE, selected = choices)
   })
   
-  data_lta <- reactive({
-    req(input$dimension, input$data_source_lta, data_user(), input$selected_vars, input$fit_stats)
+  data_irt <- reactive({
+    req(input$dimension, input$data_source_irt, data_user(), input$selected_vars, input$fit_stats)
     df <- data_user() %>% dplyr::select(all_of(input$selected_vars))
     # Exclude non-numeric columns for IRT model fitting
     df %>% dplyr::select(where(is.numeric))
   })
   
   # ==== Preview Data ====
-  output$data_preview_lta <- DT::renderDT({
-    req(input$dimension, input$data_source_lta, data_user(), input$selected_vars, input$fit_stats,data_lta())
-    df <- data_lta() 
+  output$data_preview_irt <- DT::renderDT({
+    req(input$dimension, input$data_source_irt, data_user(), input$selected_vars, input$fit_stats,data_irt())
+    df <- data_irt() 
     numeric_cols <- which(sapply(df, is.numeric))
     DT::datatable(df, extensions = 'Buttons',
                   options = list(dom='Brtp',scrollX = TRUE, pageLength = 25,  
                                  buttons = list(
                                    list(extend = 'csv',
                                         text = 'Export CSV',
-                                        filename = 'Data LTA'
+                                        filename = 'Data IRT'
                                    ),
                                    list(extend = 'excel',
                                         text = 'Export Excel',
-                                        filename = 'Data LTA'
+                                        filename = 'Data IRT'
                                    ))),
                   rownames = TRUE) %>% 
       formatRound(columns = numeric_cols, digits = 0)
   }, server = FALSE)
   output$itemtype_ui <- renderUI({
-    req(input$datatype, input$data_source_lta)
-    source_type <- if(input$data_source_lta == "upload") {
+    req(input$datatype, input$data_source_irt)
+    source_type <- if(input$data_source_irt == "upload") {
       input$datatype
     } else {
-      input$data_source_lta
+      input$data_source_irt
     }
     choices <- switch(source_type,
                       "diko" = c("Rasch" = "Rasch",
@@ -127,17 +170,17 @@ server_lta <- function(input, output, session) {
     )
   })
   
-  # ==== Reset all stored LTA results when data_user changes ====
+  # ==== Reset all stored IRT results when data_user changes ====
   observeEvent(data_user(), {
     # Reset stored models and current selection
-    lta_fit_list(list())
-    lta_fit_compare(NULL)
-    lta_current_id(NULL)
+    irt_fit_list(list())
+    irt_fit_compare(NULL)
+    irt_current_id(NULL)
   })
-  # ===== LTA / MIRT MODEL =====
-  output$lta_model_ui <- renderUI({
-    req(input$data_source_lta, input$dimension=="multi")
-    model_text <- switch(input$data_source_lta,
+  # ===== IRT / MIRT MODEL =====
+  output$irt_model_ui <- renderUI({
+    req(input$data_source_irt, input$dimension=="multi")
+    model_text <- switch(input$data_source_irt,
                          # === 1. Multidimensional - Dichotomous ===
                          "diko" = "
 # Example 1: Multidimensional - Dichotomous (2 dimensions)
@@ -156,17 +199,17 @@ F2 = 6-10
 "
     )
     tags$textarea(
-      id = "lta_model_text",
+      id = "irt_model_text",
       rows = 10,
       style = "width:100%; font-family: monospace; font-size:11px;",
       model_text
     )
   })
   
-  # ==== LTA storage ====
-  lta_fit_list <- reactiveVal(list())
-  lta_fit_compare <- reactiveVal(NULL)
-  lta_current_id <- reactiveVal(NULL)
+  # ==== IRT storage ====
+  irt_fit_list <- reactiveVal(list())
+  irt_fit_compare <- reactiveVal(NULL)
+  irt_current_id <- reactiveVal(NULL)
   
   # ==== Fungsi untuk menjalankan model ====
   run_mirt_model <- function(data, model_def, itemtype) {
@@ -178,21 +221,21 @@ F2 = 6-10
     })
   }
   
-  # ==== LTA Main Run ====
-  observeEvent(input$run_lta, {
-    req(data_lta(), input$selected_vars, input$fit_stats)
+  # ==== IRT Main Run ====
+  observeEvent(input$run_irt, {
+    req(data_irt(), input$selected_vars, input$fit_stats)
     # Tambahkan kondisi khusus untuk upload
-    if (input$data_source_lta == "upload") {
+    if (input$data_source_irt == "upload") {
       req(input$datatype)
     }
-    updateTabsetPanel(session, "main_tab_lta", selected = "summary_tab")
-    df <- data_lta()
+    updateTabsetPanel(session, "main_tab_irt", selected = "summary_tab")
+    df <- data_irt()
     # Model
-    source_type <- if(input$data_source_lta == "upload") {
+    source_type <- if(input$data_source_irt == "upload") {
       req(input$datatype)   # pastikan user sudah pilih
       input$datatype
     } else {
-      input$data_source_lta
+      input$data_source_irt
     }
     
     itemtypes <- switch(source_type,
@@ -200,9 +243,9 @@ F2 = 6-10
                         "poli" = c("Rasch","graded","gpcm"))
     # Define Model Syntax
     model_def <- if (input$dimension == "multi") {
-      mirt.model(input$lta_model_text,itemnames = df)
+      mirt.model(input$irt_model_text,itemnames = df)
     }  else {1}
-    showModal(modalDialog("Running Latent Trait Analysis ...", footer = NULL))
+    showModal(modalDialog("Running Item Response Theory ...", footer = NULL))
     
     fit_results <- list()
     for (item in itemtypes) {
@@ -252,7 +295,7 @@ F2 = 6-10
     # ---- Model comparison (if possible) ----
     models_for_anova <- lapply(fit_results, function(x) x$fit)
     models_for_anova <- models_for_anova[!sapply(models_for_anova, is.null)]
-    lta_fit_compare(
+    irt_fit_compare(
       switch(source_type,
              "diko" = as.data.frame(anova(models_for_anova[['Rasch']],
                                           models_for_anova[['2PL']],
@@ -267,7 +310,7 @@ F2 = 6-10
       ))
     removeModal()
     
-    cur <- lta_fit_list()
+    cur <- irt_fit_list()
     cur <- modifyList(cur, fit_results)
     best_name <- input$itemtype
     
@@ -279,21 +322,21 @@ F2 = 6-10
     } else {
       best_id <- names(cur)[match_idx[1]]
     }
-    lta_fit_list(cur)
-    lta_current_id(best_id)
+    irt_fit_list(cur)
+    irt_current_id(best_id)
     
-    showNotification(paste0("LTA finished. Selected model: ", best_name), type = "message")
+    showNotification(paste0("IRT finished. Selected model: ", best_name), type = "message")
     
   })
   
   output$fit_comparison <- renderUI({
-    req(data_lta(), input$selected_vars, input$fit_stats, lta_fit_list())
-    source_type <- if(input$data_source_lta == "upload") {
+    req(data_irt(), input$selected_vars, input$fit_stats, irt_fit_list())
+    source_type <- if(input$data_source_irt == "upload") {
       input$datatype
     } else {
-      input$data_source_lta
+      input$data_source_irt
     }
-    all_measures <- do.call(rbind, lapply(lta_fit_list(), function(x) x$measures)) %>% 
+    all_measures <- do.call(rbind, lapply(irt_fit_list(), function(x) x$measures)) %>% 
       tibble::rownames_to_column("Model") %>%
       dplyr::mutate(
         Model = dplyr::case_when(
@@ -305,10 +348,10 @@ F2 = 6-10
       ) %>% 
       dplyr::select(Model)
     
-    N_itemfit <- do.call(rbind, lapply(lta_fit_list(), function(x) x$N_itemfit))
-    N_itemLD <- do.call(rbind, lapply(lta_fit_list(), function(x) x$LD$N_LocalDependency))
-    item_LocalDep <- do.call(rbind, lapply(lta_fit_list(), function(x) x$LD$item_LocalDep))
-    comparison <- cbind(all_measures,lta_fit_compare(),
+    N_itemfit <- do.call(rbind, lapply(irt_fit_list(), function(x) x$N_itemfit))
+    N_itemLD <- do.call(rbind, lapply(irt_fit_list(), function(x) x$LD$N_LocalDependency))
+    item_LocalDep <- do.call(rbind, lapply(irt_fit_list(), function(x) x$LD$item_LocalDep))
+    comparison <- cbind(all_measures,irt_fit_compare(),
                         N_itemfit, N_itemLD) %>% dplyr::rename(`p (χ²)`=p, 'χ²'=X2)
     comparison <- comparison %>% 
       dplyr::mutate(
@@ -411,8 +454,8 @@ F2 = 6-10
   })
   # === Helper: Get the currently selected model based on input$itemtype ===
   selected_fit <- reactive({
-    req(lta_fit_list(), input$itemtype)
-    all_models <- lta_fit_list()
+    req(irt_fit_list(), input$itemtype)
+    all_models <- irt_fit_list()
     match_idx <- which(
       tolower(sapply(all_models, function(x) x$model_type)) == tolower(input$itemtype)
     )
@@ -484,8 +527,8 @@ F2 = 6-10
   })
   
   output$select_icc <- renderUI({
-    req(data_lta())
-    choices <- c('SELECT ALL',names(data_lta()))
+    req(data_irt())
+    choices <- c('SELECT ALL',names(data_irt()))
     div(class = "select-mini", 
         selectInput("item_select_icc", NULL, choices = choices, multiple = TRUE, selected = 'SELECT ALL', width = '100%'))
   }) 
@@ -509,7 +552,7 @@ F2 = 6-10
     req(selected_fit())
     req(input$item_select_icc)
     
-    all_names <- names(data_lta())         # urutan nama sesuai choices
+    all_names <- names(data_irt())         # urutan nama sesuai choices
     if ("SELECT ALL" %in% input$item_select_icc) {
       which_idx <- seq_along(all_names)
     } else {
@@ -818,7 +861,7 @@ F2 = 6-10
                h4(icon("cogs"), "DIF Settings"),
                selectInput("dif_group_var", "Select Grouping Variable:", choices = cat_vars),
                selectInput("dif_anchor_items", "Anchor Items (optional):", 
-                           choices = c("None", input$lta_vars), selected = "None", multiple = TRUE),
+                           choices = c("None", input$irt_vars), selected = "None", multiple = TRUE),
                actionButton("run_dif", "Run DIF Analysis", class = "btn-primary", icon = icon("play"))
         ),
         column(8,
@@ -895,4 +938,142 @@ F2 = 6-10
       )
   })
 
+  # ==== R Console Output & Model Export ====
+  observeEvent(selected_fit(), {
+    req(selected_fit())
+    out <- paste(capture.output(print(selected_fit())), collapse = "\n")
+    console_context$text <- out
+  })
+  
+  output$export_irt_rds <- downloadHandler(
+    filename = function() { paste0("IRT_Workspace_", Sys.Date(), ".rds") },
+    content = function(file) {
+      req(selected_fit())
+      workspace <- list(
+        type = "measureR_workspace",
+        module = "IRT",
+        raw_data = raw_data_user(),
+        irt_fit_list = irt_fit_list(),
+        irt_fit_compare = irt_fit_compare(),
+        irt_current_id = irt_current_id(),
+        input_state = list(
+          data_source_irt = input$data_source_irt,
+          datatype = input$datatype,
+          dimension = input$dimension,
+          fit_stats = input$fit_stats,
+          irt_vars = input$irt_vars,
+          itemtype = input$itemtype,
+          irt_mirt_model = input$irt_mirt_model
+        )
+      )
+      saveRDS(workspace, file)
+    }
+  )
+
+  # ==== Score New Data ====
+  output$download_irt_template <- downloadHandler(
+    filename = function() { "IRT_template.xlsx" },
+    content = function(file) {
+      req(selected_fit())
+      items <- mirt::extract.mirt(selected_fit(), "itemnames")
+      df <- data.frame(matrix(ncol = length(items), nrow = 0))
+      colnames(df) <- items
+      writexl::write_xlsx(df, file)
+    }
+  )
+
+  irt_newscores_reactive <- eventReactive(input$irt_score_newdata_btn, {
+    req(selected_fit(), input$irt_newdata)
+    ext <- tools::file_ext(input$irt_newdata$name)
+    df <- switch(
+      ext,
+      "csv" = read.csv(input$irt_newdata$datapath),
+      "xlsx" = readxl::read_excel(input$irt_newdata$datapath),
+      "xls" = readxl::read_excel(input$irt_newdata$datapath),
+      stop("Invalid file format")
+    )
+    
+    # ensure only columns from model are used
+    items <- mirt::extract.mirt(selected_fit(), "itemnames")
+    df_used <- df[, intersect(colnames(df), items), drop = FALSE]
+    
+    # Calculate scores
+    scores <- mirt::fscores(selected_fit(), response.pattern = df_used)
+    as.data.frame(scores)
+  })
+
+  output$irt_newscores_table <- DT::renderDataTable({
+    req(irt_newscores_reactive())
+    datatable(round(irt_newscores_reactive(), 3), options = list(scrollX = TRUE))
+  })
+
+  output$download_irt_newscores <- downloadHandler(
+    filename = function() { "IRT_New_Scores.csv" },
+    content = function(file) {
+      req(irt_newscores_reactive())
+      write.csv(irt_newscores_reactive(), file, row.names = FALSE)
+    }
+  )
+
+  # ==== AI Assistant ====
+  # Update global AI context whenever results change
+  observe({
+    res_text <- ""
+    if (length(irt_fit_list()) > 0 && !is.null(input$irt_model_select)) {
+      fit <- try(selected_fit(), silent = TRUE)
+      if (!inherits(fit, "try-error") && !is.null(fit)) {
+        res_text <- paste(capture.output(summary(fit)), collapse = "\n")
+      }
+    }
+    ai_context$results_text <- res_text
+    ai_context$module <- "Item Response Theory (IRT) / Item Response Theory"
+  })
+
+  addResourcePath("irt_reports", tempdir())
+  irt_report_path <- reactiveVal(NULL)
+  
+  observeEvent(input$irt_generate_preview, {
+    req(selected_fit())
+    
+    report_path <- file.path(system.file("app", package = "measureR"), "irt_report.Rmd")
+    if (report_path == "" || !file.exists(report_path)) {
+      report_path <- "irt_report.Rmd"
+    }
+    
+    tempReport <- file.path(tempdir(), "irt_report.Rmd")
+    file.copy(report_path, tempReport, overwrite = TRUE)
+    
+    out_html <- file.path(tempdir(), "irt_report_out.html")
+    
+    showModal(modalDialog("Generating Report Preview...", footer = NULL))
+    tryCatch({
+      rmarkdown::render(tempReport, output_file = out_html,
+        params = list(
+          irt_res = selected_fit(),
+          console_out = console_context$text,
+          ai_summary = if (is.null(ai_context$ai_report_text)) "" else ai_context$ai_report_text
+        )
+      )
+      irt_report_path(out_html)
+    }, error = function(e) {
+      showNotification(paste("Error rendering report:", e$message), type = "error")
+    }, finally = {
+      removeModal()
+    })
+  })
+  
+  output$irt_report_preview_frame <- renderUI({
+    req(irt_report_path())
+    tags$iframe(src = "irt_reports/irt_report_out.html", width = "100%", height = "800px", style = "border: none;")
+  })
+
+  output$download_report_irt <- downloadHandler(
+    filename = function() {
+      paste0("IRT_Report_", Sys.Date(), ".html")
+    },
+    content = function(file) {
+      req(irt_report_path())
+      file.copy(irt_report_path(), file, overwrite = TRUE)
+    }
+  )
 }

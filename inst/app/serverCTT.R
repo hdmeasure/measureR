@@ -1,4 +1,4 @@
-server_ctt <- function(input, output, session) {
+server_ctt <- function(input, output, session, ai_context, console_context) {
     library(CTT)
     library(dplyr)
     library(DT)
@@ -387,5 +387,126 @@ server_ctt <- function(input, output, session) {
       datatable(df, options = list(dom = "t", pageLength = 10), rownames = FALSE)
     })
     
-  }
+  # ==== R Console Output & Model Export ====
+  observeEvent(ctt_result(), {
+    req(ctt_result())
+    out <- paste(capture.output(print(ctt_result())), collapse = "\n")
+    console_context$text <- out
+  })
   
+  output$export_ctt_rds <- downloadHandler(
+    filename = function() { paste0("CTT_result_", Sys.Date(), ".rds") },
+    content = function(file) {
+      req(ctt_result())
+      saveRDS(ctt_result(), file)
+    }
+  )
+
+  # ==== Score New Data ====
+  output$download_ctt_template <- downloadHandler(
+    filename = function() { "CTT_template.xlsx" },
+    content = function(file) {
+      req(input$items_ctt)
+      items <- input$items_ctt
+      df <- data.frame(matrix(ncol = length(items), nrow = 0))
+      colnames(df) <- items
+      writexl::write_xlsx(df, file)
+    }
+  )
+
+  ctt_newscores_reactive <- eventReactive(input$ctt_score_newdata_btn, {
+    req(input$items_ctt, input$ctt_newdata)
+    ext <- tools::file_ext(input$ctt_newdata$name)
+    df <- switch(
+      ext,
+      "csv" = read.csv(input$ctt_newdata$datapath),
+      "xlsx" = readxl::read_excel(input$ctt_newdata$datapath),
+      "xls" = readxl::read_excel(input$ctt_newdata$datapath),
+      stop("Invalid file format")
+    )
+    
+    # Calculate scores (sum score for CTT)
+    items <- input$items_ctt
+    df_used <- df[, intersect(colnames(df), items), drop = FALSE]
+    # convert to numeric
+    for (j in seq_along(df_used)) {
+      df_used[[j]] <- as.numeric(as.character(df_used[[j]]))
+    }
+    scores <- rowSums(df_used, na.rm = TRUE)
+    
+    as.data.frame(scores)
+  })
+
+  output$ctt_newscores_table <- DT::renderDataTable({
+    req(ctt_newscores_reactive())
+    datatable(round(ctt_newscores_reactive(), 3), options = list(scrollX = TRUE))
+  })
+
+  output$download_ctt_newscores <- downloadHandler(
+    filename = function() { "CTT_New_Scores.csv" },
+    content = function(file) {
+      req(ctt_newscores_reactive())
+      write.csv(ctt_newscores_reactive(), file, row.names = FALSE)
+    }
+  )
+
+  # ==== AI Assistant ====
+  # Update global AI context whenever results change
+  observe({
+    res_text <- ""
+    if (!is.null(ctt_result())) {
+      fit <- ctt_result()
+      res_text <- paste(capture.output(print(fit)), collapse = "\n")
+    }
+    ai_context$results_text <- res_text
+    ai_context$module <- "Classical Test Theory (CTT)"
+  })
+
+  addResourcePath("ctt_reports", tempdir())
+  ctt_report_path <- reactiveVal(NULL)
+  
+  observeEvent(input$ctt_generate_preview, {
+    req(ctt_result())
+    
+    report_path <- file.path(system.file("app", package = "measureR"), "ctt_report.Rmd")
+    if (report_path == "" || !file.exists(report_path)) {
+      report_path <- "ctt_report.Rmd"
+    }
+    
+    tempReport <- file.path(tempdir(), "ctt_report.Rmd")
+    file.copy(report_path, tempReport, overwrite = TRUE)
+    
+    out_html <- file.path(tempdir(), "ctt_report_out.html")
+    
+    showModal(modalDialog("Generating Report Preview...", footer = NULL))
+    tryCatch({
+      rmarkdown::render(tempReport, output_file = out_html,
+        params = list(
+          ctt_res = ctt_result(),
+          console_out = console_context$text,
+          ai_summary = if (is.null(ai_context$ai_report_text)) "" else ai_context$ai_report_text
+        )
+      )
+      ctt_report_path(out_html)
+    }, error = function(e) {
+      showNotification(paste("Error rendering report:", e$message), type = "error")
+    }, finally = {
+      removeModal()
+    })
+  })
+  
+  output$ctt_report_preview_frame <- renderUI({
+    req(ctt_report_path())
+    tags$iframe(src = "ctt_reports/ctt_report_out.html", width = "100%", height = "800px", style = "border: none;")
+  })
+
+  output$download_report_ctt <- downloadHandler(
+    filename = function() {
+      paste0("CTT_Report_", Sys.Date(), ".html")
+    },
+    content = function(file) {
+      req(ctt_report_path())
+      file.copy(ctt_report_path(), file, overwrite = TRUE)
+    }
+  )
+}

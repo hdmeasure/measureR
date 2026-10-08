@@ -8,26 +8,32 @@ source("ctt_ui.R")
 source("contentval_ui.R")
 source("efa_ui.R")
 source("cfa_ui.R")
-source("lta_ui.R")
+source("irt_ui.R")
 source("plotinfose.R")
-source("lta_info_vis.R")
+source("irt_info_vis.R")
 
 # ==== Load Logic / Server Modules ====
 source("serverEFA.R")
 source("serverCFA.R")
 source("serverCTT.R")
 source("serverContentval.R")
-source("serverLTA.R")
+source("serverIRT.R")
 
 # ==== Misc utilities ====
 source("reference_list.R")
 source("simDataDesc.R")
 source("downloadPlot.R")
 source("styleCSS.R")
+source("ai_helper.R")
+source("ai_widget_ui.R")
+source("serverAIWidget.R")
+source("console_widget_ui.R")
 
 # ==== Main Library ======
 library(shiny)
 library(shinyWidgets)
+library(httr)
+library(jsonlite)
 library(DT)
 library(readxl)
 library(dplyr)
@@ -37,15 +43,30 @@ library(tidyverse)
 library(tidyr)
 library(shinyBS)
 library(haven)
+library(writexl)
 options(shiny.maxRequestSize = 300 * 1024^2)  # 300 MB
 
 # ===== UI =====
 ui <- fluidPage(
   styleCSS,
-  uiOutput("mainUI")
+  uiOutput("mainUI"),
+  ai_widget_ui(),
+  console_widget_ui()
 )
 # ==== Server =====
 server <- function(input, output, session) {
+
+  # Global AI Context
+  ai_context <- reactiveValues(results_text = "", module = "")
+  
+  # Call global AI widget logic
+  server_ai_widget(input, output, session, ai_context)
+  
+  # Global Console Context
+  console_context <- reactiveValues(text = "Belum ada output R.")
+  output$global_console_output <- renderPrint({
+    cat(console_context$text)
+  })
 
   observeEvent(TRUE, {
     showModal(modalDialog(
@@ -66,7 +87,7 @@ server <- function(input, output, session) {
          <strong>Reference:</strong><br>
          Djidu, H., &amp; Retnawati, H. (2026).
         <em>measureR: Tools for educational and psychological measurement</em>.
-        R package (Version 0.0.3).
+        R package (Version 0.0.5).
         Available at:
         <a href='https://github.com/hdmeasure/measureR' target='_blank'>
         https://github.com/hdmeasure/measureR</a>.
@@ -86,10 +107,37 @@ server <- function(input, output, session) {
   # === observe event from homepage ===
   observeEvent(input$go_ctt, { project("ctt") })
   observeEvent(input$go_contentval, { project("contentval") })
-  observeEvent(input$go_lta, { project("lta") })
+  observeEvent(input$go_irt, { project("irt") })
   observeEvent(input$go_efa, { project("efa") })
   observeEvent(input$go_cfa, { project("cfa") })
   observeEvent(input$go_home, { project("home") })
+
+  # === AI Settings Logic ===
+  observeEvent(input$ai_provider, {
+    providers <- ai_providers()
+    selected <- input$ai_provider
+    if (selected %in% names(providers)) {
+      updateTextInput(session, "ai_model", value = providers[[selected]]$default_model)
+    }
+  })
+  
+  observeEvent(input$test_ai_connection, {
+    req(input$ai_provider, input$ai_api_key)
+    output$ai_connection_status_ui <- renderUI({ tags$span(style = "color: blue;", "Testing...") })
+    
+    res <- ask_ai(
+      prompt = "Hello! Please reply with exactly 'Connection OK'.",
+      provider = input$ai_provider,
+      model = input$ai_model,
+      api_key = input$ai_api_key
+    )
+    
+    if (grepl("Error", res, ignore.case = TRUE) || grepl("HTTP", res)) {
+      output$ai_connection_status_ui <- renderUI({ tags$span(style = "color: red;", res) })
+    } else {
+      output$ai_connection_status_ui <- renderUI({ tags$span(style = "color: green; font-weight: bold;", icon("check"), " Connection OK") })
+    }
+  })
 
   # === Render main UI ===
   output$mainUI <- renderUI({
@@ -99,7 +147,7 @@ server <- function(input, output, session) {
         project(),
         "ctt" = ctt_mod("ctt"),
         "contentval" = contentval_mod("contentval"),
-        "lta" = lta_mod("lta"),
+        "irt" = irt_mod("irt"),
         "efa" = efa_mod("efa"),
         "cfa" = cfa_mod("cfa"),
         home_mod("home")
@@ -111,11 +159,11 @@ server <- function(input, output, session) {
     current <- project()
     switch(
       current,
-      "contentval" = server_contentval(input, output, session),
-      "efa" = server_efa(input, output, session),
-      "cfa" = server_cfa(input, output, session),
-      "ctt" = server_ctt(input, output, session),
-      "lta" = server_lta(input, output, session),
+      "contentval" = server_contentval(input, output, session, ai_context, console_context),
+      "efa" = server_efa(input, output, session, ai_context, console_context),
+      "cfa" = server_cfa(input, output, session, ai_context, console_context),
+      "ctt" = server_ctt(input, output, session, ai_context, console_context),
+      "irt" = server_irt(input, output, session, ai_context, console_context),
       NULL
     )
   })
@@ -127,13 +175,13 @@ server <- function(input, output, session) {
     output$package_references_ctt <- renderUI({
       render_package_refs(c("shiny", "CTT", "dplyr", "DT","readxl","ggplot2"))
     })
-    # LTA / IRT
-    output$package_references_lta <- renderUI({
-      lta_reference <- list(
+    # IRT / IRT
+    output$package_references_irt <- renderUI({
+      irt_reference <- list(
         Desjardins_Bulut_2018 = "Desjardins, C. D., & Bulut, O. (2018). <em>Handbook of educational measurement and psychometrics using R</em> (1st ed.). Chapman & Hall/CRC."
       )
       render_package_refs(c("shiny", "tidyverse", "mirt", "DT", "readxl", "dplyr","ggplot2"),
-                          manual_refs = lta_reference)
+                          manual_refs = irt_reference)
     })
     # EFA
     output$package_references_efa <- renderUI({

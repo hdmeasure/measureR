@@ -28,15 +28,18 @@ Useful links:
   \item Report bugs at \url{https://github.com/hdmeasure/measureR/issues}
 }
 
-
-Useful links:
-\itemize{
-  \item \url{https://github.com/hdmeasure/measureR}
-  \item Report bugs at \url{https://github.com/hdmeasure/measureR/issues}
-}
-
 }
 \author{
 \strong{Maintainer}: Hasan Djidu \email{hasandjidu@gmail.com} (\href{https://orcid.org/0000-0003-1110-6815}{ORCID})
+
+Authors:
+\itemize{
+  \item Hasan Djidu \email{hasandjidu@gmail.com} (\href{https://orcid.org/0000-0003-1110-6815}{ORCID})
+}
+
+Other contributors:
+\itemize{
+  \item Heri Retnawati (\href{https://orcid.org/0000-0002-1792-5873}{ORCID}) [contributor]
+}
 
 }

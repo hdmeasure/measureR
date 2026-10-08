@@ -1,7 +1,7 @@
 Package: measureR
 Title: Tools for Educational and Psychological Measurement
-Version: 0.0.3
-Authors@R:
+Version: 0.0.5
+Authors@R: 
     c(
       person(
         given = "Hasan",
@@ -19,51 +19,17 @@ Authors@R:
     )
 Description: 'Provides an interactive toolkit for educational and psychological measurement implemented using the 'shiny' framework. The package supports content validity analysis, dimensionality assessment, and Classical Test Theory using the 'CTT' package (Willse, 2018) <doi:10.32614/CRAN.package.CTT>. Item Response Theory (IRT) analyses are conducted via 'mirt' (Chalmers, 2012) <doi:10.18637/jss.v048.i06>. Exploratory Factor Analysis is performed using 'psych' (Revelle, 2025), while Confirmatory Factor Analysis (CFA) and Structural Equation Modeling (SEM) are based on the 'lavaan' framework (Rosseel, 2012) <doi:10.18637/jss.v048.i02>. The CFA/SEM module features interactive model specification, automatic model comparison, modification indices, comprehensive fit diagnostics, path diagram visualization, and HTML report generation. The application allows users to upload data, evaluate statistical models, visualize results, and export outputs through an intuitive graphical interface without requiring programming experience.
 License: MIT + file LICENSE
-Depends:
-    R (>= 4.0.0)
+Depends: R (>= 4.0.0)
 Encoding: UTF-8
-Imports:
-    colourpicker,
-    CTT,
-    data.table,
-    dplyr,
-    DT,
-    flextable,
-    ggplot2,
-    haven,
-    kableExtra,
-    knitr,
-    lavaan,
-    magick,
-    irr,
-    mirt,
-    officer,
-    psych,
-    purrr,
-    readr,
-    readxl,
-    rlang,
-    rmarkdown,
-    scales,
-    semPlot,
-    semptools,
-    shiny,
-    shinyBS,
-    shinycssloaders,
-    shinyWidgets,
-    stats,
-    stringr,
-    tibble,
-    tidyr,
-    tidyverse,
-    viridisLite
-Suggests:
-    pkgdown,
-    testthat (>= 3.0.0)
-LazyData: false
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
+Imports: colourpicker, CTT, data.table, dplyr, DT, flextable, ggplot2,
+        haven, httr, jsonlite, kableExtra, knitr, lavaan, magick, irr, mirt, officer,
+        pdftools, psych, purrr, readr, readxl, rlang, rmarkdown, scales, semPlot,
+        semptools, shiny, shinyBS, shinycssloaders, shinyWidgets,
+        stats, stringr, tibble, tidyr, tidyverse, viridisLite, writexl
+Suggests: pkgdown, testthat (>= 3.0.0)
 VignetteBuilder: knitr
 URL: https://github.com/hdmeasure/measureR
 BugReports: https://github.com/hdmeasure/measureR/issues
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
+NeedsCompilation: no

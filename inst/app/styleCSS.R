@@ -66,7 +66,7 @@ styleCSS <- tags$head(
      STYLE UNTUK TOMBOL (BUTTON)
   ================================ */
   .btn {
-    width: auto !important;
+    width: auto;
     padding: 5px 10px !important;
     font-size: 12px !important;
     line-height: 1 !important;
@@ -313,17 +313,17 @@ styleCSS <- tags$head(
   .quad-card:hover {
     transform: scale(1.05);
   }
-#card_lta{background:#e8efff;border:2px solid #1e40af}
+#card_irt{background:#e8efff;border:2px solid #1e40af}
 #card_ctt{background:#f3f4f6;border:2px solid #111827}
 #card_fa {background:#ffedd5;border:2px solid #f59e0b}
 #card_val{background:#fee2e2;border:2px solid #ef4444}
 
-#card_lta .project-icon{background:#dbe7ff;color:#1e40af}
+#card_irt .project-icon{background:#dbe7ff;color:#1e40af}
 #card_ctt .project-icon{background:#e5e7eb;color:#111827}
 #card_fa  .project-icon{background:#ffedd5;color:#f59e0b}
 #card_val .project-icon{background:#fee2e2;color:#ef4444}
 
-#card_lta .btn-pill{background:#1e40af}
+#card_irt .btn-pill{background:#1e40af}
 #card_ctt .btn-pill{background:#111827}
 #card_fa  .btn-pill{background:#f59e0b}
 #card_val .btn-pill{background:#ef4444}
@@ -522,5 +522,29 @@ styleCSS <- tags$head(
 }
 
   
+
+.floating-widget {
+  opacity: 0.6;
+  transition: opacity 0.3s ease-in-out;
+}
+.floating-widget:hover {
+  opacity: 1.0;
+}
+
+/* Professional Sidebar Styling for wellPanel */
+.well {
+  background-color: #f4f6f9 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
+  padding: 22px !important;
+}
+
+/* Fix dropdown transparency issues */
+.dropdown-menu, .dropdown-menu .inner, .selectize-dropdown, .selectize-dropdown.form-control {
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+  z-index: 10000 !important;
+}
   "))
 )
