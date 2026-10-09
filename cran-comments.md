@@ -9,5 +9,9 @@
   are declared in Imports.
 
 ## Notes
-This version adds an AI assistant, an R console panel, HTML report export and an
-IRT module to the Shiny application. Version 0.0.4 was not released.
+This version redesigns the Classical Test Theory module of the Shiny
+application: a new layout (data, item analysis, distractors, reliability,
+scores, report), item evaluation with published cut-offs, a dedicated
+distractor analysis, person scores with an SEM-based band, a decimal-separator
+setting, and a rewritten HTML report. The built-in polytomous example data are
+now simulated.
