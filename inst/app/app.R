@@ -4,6 +4,7 @@
 # ==== Load UI & Server Components ====
 source("ui_module.R")
 source("homepage_ui.R")
+source("ctt_helpers.R")
 source("ctt_ui.R")
 source("contentval_ui.R")
 source("efa_ui.R")
@@ -87,7 +88,7 @@ server <- function(input, output, session) {
          <strong>Reference:</strong><br>
          Djidu, H., &amp; Retnawati, H. (2026).
         <em>measureR: Tools for educational and psychological measurement</em>.
-        R package (Version 0.0.5).
+        R package (Version 0.0.6).
         Available at:
         <a href='https://github.com/hdmeasure/measureR' target='_blank'>
         https://github.com/hdmeasure/measureR</a>.

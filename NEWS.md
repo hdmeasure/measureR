@@ -1,3 +1,32 @@
+# measureR 0.0.6
+
+Focus: redesigned **Classical Test Theory (CTT)** module.
+
+## Layout
+
+The CTT module now follows the analysis workflow: **Data → Item Analysis → Distractors → Reliability → Scores → Report**, followed by Settings and About. Summary statistics are shown as one calm strip instead of coloured cards, the item table is more compact, and references moved to About.
+
+* **Distractors** is a tab of its own (response with key): an overview of all items with non-functioning options (< 5%) and options with a positive option-total correlation, the option table of the selected item, and a plot of option choice by total-score group.
+* **Reliability** combines alpha, SEM, the 95% band, and split-half reliability with the alpha-if-deleted chart.
+* **Scores** groups the score distribution, person scores with the SEM band, and scoring of new data.
+
+## CTT module
+
+* **Item Analysis** is now a dashboard: summary cards (alpha, SEM, mean score, items to review), a full item table, and an item-detail panel (item selector, ICC, distractor analysis) beside it. Clicking a table row selects the item.
+* Item table now reports difficulty (p), discrimination (item-total correlation), alpha-if-deleted, a flag for items whose removal raises alpha, and a **Retain / Revise / Eliminate** recommendation.
+* Interpretation cut-offs follow published sources and are shown in the app and the report: discrimination (Ebel & Frisbie, 1991), difficulty (Allen & Yen, 1979; Crocker & Algina, 1986), Cronbach's alpha (George & Mallery, 2003; Nunnally & Bernstein, 1994), and distractor functioning (Haladyna & Downing, 1993).
+* Discrimination for polytomous items now uses the item-total correlation (previously the biserial coefficient).
+* **Built-in polytomous data replaced**: the old example was multiple-choice letters recoded A=1..D=4, which are not ordinal and gave meaningless results (alpha ~ 0.03). It is now a simulated 200 x 20 rating-scale dataset (1-4, graded response model).
+* New "Analysis by Data Type" guide explaining how CTT differs for dichotomous, polytomous, and response-with-key data.
+* **Prepare Data**: step-by-step sidebar, data summary cards (examinees, items, missing %), and tabs for preview, response frequencies, and the required data format.
+* **Score Distribution & Reliability**: reliability card with SEM and 95% band, split-half (Spearman-Brown) cards, an alpha-if-deleted chart, histogram with mean line, and extended descriptives (skewness, kurtosis, SEM, alpha).
+* Person scores now include an SEM-based confidence band (68/90/95/99%) and Kelley's estimated true score, in **Score New Data** and in a new Person Scores table.
+* **Score New Data** now scores response-with-key data using the key, reports how many items matched, and shows a score histogram.
+* Distractor analysis flags non-functioning distractors (< 5%) and distractors with positive item-total correlation.
+* New **Settings** tab with the **decimal separator** (dot or comma) and decimal places. It applies to tables, cards, plots, the HTML report, and the exported score file (comma gives a semicolon-separated .csv). Semicolon-delimited uploaded .csv files are read with a decimal comma automatically.
+* **Report** rewritten: the old report referenced fields that did not exist in the CTT result. The new report has an overview with an automatic summary, reliability (alpha, SEM, split-half, alpha-if-deleted chart), a colour-coded item table with cut-offs, a difficulty-discrimination plot, distractor analysis (response with key), score distribution, person scores with SEM band, the console output and references. The HTML download now renders on demand and no longer requires generating the preview first.
+* The R console and AI assistant now receive a compact results summary instead of the raw result object.
+
 # measureR 0.0.5
 
 This release moves directly from 0.0.3 to 0.0.5 (version 0.0.4 was not released).

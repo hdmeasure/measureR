@@ -1,100 +1,295 @@
 ---
 title: "Classical Test Theory (CTT) Report"
 date: "`r Sys.Date()`"
-output: 
+output:
   html_document:
     theme: flatly
     toc: true
     toc_float: true
+    toc_depth: 2
 params:
   ctt_res: NA
+  dec: "."
+  digits: 3
   console_out: NA
   ai_summary: ""
 ---
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-  
-  body, p, table, td, th {
+  body, p, table, td, th, li {
     font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.6 !important;
+    line-height: 1.55;
     font-size: 14px;
     color: #333333;
   }
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.2;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-top: 1.5em;
-    margin-bottom: 0.5em;
-  }
-  h1 { font-size: 28px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
-  h2 { font-size: 22px; color: #2980b9; }
-  h3 { font-size: 18px; color: #34495e; }
+  h1, h2, h3, h4 { font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 600; color: #2c3e50; }
+  h1.title { font-size: 28px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
+  h2 { font-size: 22px; color: #2980b9; margin-top: 1.6em; }
+  h3 { font-size: 17px; color: #34495e; }
+  .cards { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0 18px 0; }
+  .card { flex: 1 1 140px; border: 1px solid #e2e8f0; border-top: 4px solid #0d6efd; border-radius: 8px; padding: 8px 12px; background: #fff; }
+  .card .lab { font-size: 11px; color: #64748b; }
+  .card .val { font-size: 24px; font-weight: 700; }
+  .card .sub { font-size: 12px; color: #64748b; }
+  .note { font-size: 12px; color: #64748b; }
+  .callout { padding: 10px 14px; border-left: 4px solid #0d6efd; background: #f0f7ff; border-radius: 4px; margin: 10px 0; }
+  .callout.warn { border-color: #fd7e14; background: #fff7ed; }
+  .callout.bad { border-color: #dc3545; background: #fef2f2; }
+  .callout.ok { border-color: #198754; background: #f0fdf4; }
+  details { margin: 6px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  pre.console { font-size: 11px; background: #f8f9fa; border: 1px solid #ccc; border-radius: 4px; padding: 10px; white-space: pre-wrap; }
 </style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
-library(CTT)
 library(dplyr)
 library(knitr)
 library(kableExtra)
+library(ggplot2)
+
+res  <- params$ctt_res
+dec  <- params$dec
+dg   <- as.integer(params$digits)
+ok   <- is.list(res) && !is.null(res$item_eval)
+
+fmt <- function(x, digits = dg) {
+  out <- rep("n/a", length(x))
+  k <- !is.na(x)
+  out[k] <- formatC(x[k], format = "f", digits = digits, decimal.mark = dec)
+  out
+}
+ax <- function(x) format(x, decimal.mark = dec)
+
+alpha_label <- function(a) {
+  if (is.na(a)) "Not available" else if (a >= .90) "Excellent" else if (a >= .80) "Good" else
+    if (a >= .70) "Acceptable" else if (a >= .60) "Questionable" else if (a >= .50) "Poor" else "Unacceptable"
+}
+alpha_col <- function(a) {
+  if (is.na(a)) "#6c757d" else if (a >= .90) "#198754" else if (a >= .80) "#2e9e4f" else
+    if (a >= .70) "#e0a800" else if (a >= .60) "#fd7e14" else if (a >= .50) "#dc3545" else "#a71d2a"
+}
+card <- function(lab, val, sub = "", col = "#0d6efd") {
+  sprintf("<div class='card' style='border-top-color:%s'><div class='lab'>%s</div><div class='val' style='color:%s'>%s</div><div class='sub'>%s</div></div>",
+          col, lab, col, val, sub)
+}
+rec_bg  <- function(x) ifelse(x == "Retain", "#d4edda", ifelse(x == "Revise", "#fff3cd", "#f8d7da"))
+disc_bg <- function(x) ifelse(x %in% c("Very good", "Good"), "#d4edda", ifelse(x == "Marginal", "#fff3cd", "#f8d7da"))
+diff_bg <- function(x) ifelse(x == "Moderate", "#d4edda", "#fff3cd")
 ```
 
-## Scale Reliability and Summary
+```{r nores, results='asis', eval=!ok}
+cat("<div class='callout bad'>No CTT results available. Run the analysis in the app before generating the report.</div>")
+```
 
-```{r}
-res <- params$ctt_res
-if(!is.null(res)){
-  df_sum <- data.frame(
-    Statistic = c("Scale Mean", "Scale SD", "Alpha (Cronbach)", "SEM", "N Items", "N Persons"),
-    Value = c(
-      round(res$scaleMean, 3),
-      round(res$scaleSD, 3),
-      round(res$alpha, 3),
-      round(res$SEM, 3),
-      ncol(res$itemReport),
-      nrow(res$score)
-    )
-  )
-  kable(df_sum, format = "html") %>% 
-    kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```{r prep, eval=ok}
+ev   <- res$item_eval
+n_ret <- sum(ev$Recommendation == "Retain", na.rm = TRUE)
+n_rev <- sum(ev$Recommendation == "Revise", na.rm = TRUE)
+n_eli <- sum(ev$Recommendation == "Eliminate / revise", na.rm = TRUE)
+n_up  <- sum(ev$Raises_Alpha, na.rm = TRUE)
+neg   <- ev$Item[!is.na(ev$Discrimination) & ev$Discrimination < 0]
+ci    <- res$scaleMean + c(-1, 1) * 1.96 * res$SEM
+```
+
+# Overview {.unnumbered}
+
+```{r overview, results='asis', eval=ok}
+cat(sprintf("<p><b>Data:</b> %s &middot; <b>Item type:</b> %s &middot; <b>Examinees:</b> %s &middot; <b>Items:</b> %s</p>",
+            ifelse(is.null(res$data_label), "-", res$data_label), res$type, res$nPerson, res$nItem))
+cat("<div class='cards'>")
+cat(card("Cronbach's &alpha;", fmt(res$alpha), alpha_label(res$alpha), alpha_col(res$alpha)))
+cat(card("SEM", fmt(res$SEM), "score units"))
+cat(card("Mean total score", fmt(res$scaleMean, 2), paste0("SD = ", fmt(res$scaleSD, 2)), "#0f766e"))
+if (!is.na(res$split$sb)) cat(card("Split-half (S-B)", fmt(res$split$sb), alpha_label(res$split$sb), alpha_col(res$split$sb)))
+cat(card("Items to review", n_rev + n_eli, "revise / eliminate", if (n_rev + n_eli == 0) "#198754" else "#dc3545"))
+cat("</div>")
+
+cat(sprintf("<div class='callout %s'><b>Summary.</b> The test (%d items, %d examinees) has Cronbach's &alpha; = %s (%s reliability) and SEM = %s; an observed score is expected to lie within &plusmn;1.96 &times; SEM of the true score 95%% of the time. Of the %d items, %d are retained, %d need revision and %d should be eliminated or revised (based on discrimination). %s%s</div>",
+  if (is.na(res$alpha) || res$alpha >= .70) "ok" else "warn",
+  res$nItem, res$nPerson, fmt(res$alpha), tolower(alpha_label(res$alpha)), fmt(res$SEM),
+  res$nItem, n_ret, n_rev, n_eli,
+  if (n_up > 0) sprintf("Removing %d item(s) (%s) would raise alpha. ", n_up, paste(ev$Item[ev$Raises_Alpha], collapse = ", ")) else "",
+  if (length(neg) > 0) sprintf("Items with negative discrimination: %s; check the key or reverse-coded items.", paste(neg, collapse = ", ")) else ""))
+```
+
+# Reliability
+
+```{r reliability, eval=ok}
+rel <- data.frame(
+  Statistic = c("Cronbach's alpha", "Interpretation", "SEM", "95% band around the mean score",
+                "Split-half r (odd-even)", "Spearman-Brown corrected"),
+  Value = c(fmt(res$alpha), alpha_label(res$alpha), fmt(res$SEM),
+            paste0(fmt(ci[1], 2), " – ", fmt(ci[2], 2)),
+            fmt(res$split$r), fmt(res$split$sb)),
+  stringsAsFactors = FALSE
+)
+kable(rel, format = "html") %>% kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+<p class="note">Alpha interpretation: George and Mallery (2003); Nunnally and Bernstein (1994). SEM = SD &times; &radic;(1 &minus; &alpha;).</p>
+
+```{r aid, eval=ok, fig.height=3.8, fig.width=8}
+d <- ev
+d$Item <- factor(d$Item, levels = d$Item)
+ggplot(d, aes(Item, Alpha_if_Deleted, fill = Raises_Alpha)) +
+  geom_col(width = .7) +
+  geom_hline(yintercept = res$alpha, linetype = "dashed", colour = "#dc3545") +
+  scale_fill_manual(values = c(`FALSE` = "#0d6efd", `TRUE` = "#dc3545"),
+                    labels = c(`FALSE` = "Keep", `TRUE` = "Raises alpha if deleted"), name = NULL) +
+  scale_y_continuous(labels = ax) +
+  coord_cartesian(ylim = c(max(0, min(d$Alpha_if_Deleted, na.rm = TRUE) - .05), NA)) +
+  labs(x = NULL, y = "Alpha if item deleted", subtitle = paste0("Dashed line: overall alpha = ", fmt(res$alpha))) +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 90, vjust = .5, hjust = 1), legend.position = "bottom")
+```
+
+# Item Analysis
+
+```{r items, eval=ok}
+show_bis <- res$type == "dichotomous"
+tab <- data.frame(
+  Item = ev$Item,
+  Mean = fmt(ev$Mean),
+  p = fmt(ev$Difficulty),
+  Difficulty = ev$Difficulty_Level,
+  `Item-Total r` = fmt(ev$Discrimination),
+  Discrimination = ev$Discrimination_Level,
+  Biserial = fmt(ev$Biserial),
+  `Alpha if Deleted` = fmt(ev$Alpha_if_Deleted),
+  `Raises Alpha` = ifelse(ev$Raises_Alpha, "Yes", "No"),
+  Recommendation = ev$Recommendation,
+  check.names = FALSE, stringsAsFactors = FALSE
+)
+if (!show_bis) tab$Biserial <- NULL
+cn <- colnames(tab)
+kable(tab, format = "html", row.names = FALSE, align = "lrrlrlrrcl") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = TRUE) %>%
+  column_spec(which(cn == "Difficulty"), background = diff_bg(ev$Difficulty_Level)) %>%
+  column_spec(which(cn == "Discrimination"), background = disc_bg(ev$Discrimination_Level)) %>%
+  column_spec(which(cn == "Raises Alpha"), background = ifelse(ev$Raises_Alpha, "#f8d7da", "#ffffff")) %>%
+  column_spec(which(cn == "Recommendation"), background = rec_bg(ev$Recommendation), bold = TRUE)
+```
+
+<details>
+<summary>Cut-offs used</summary>
+
+* **Discrimination** (item-total correlation; Ebel and Frisbie, 1991): &ge; .40 very good; .30&ndash;.39 good; .20&ndash;.29 marginal (revise); < .20 poor (eliminate or revise); negative values suggest a keying error.
+* **Difficulty p** (Allen and Yen, 1979; Crocker and Algina, 1986): < .30 difficult; .30&ndash;.70 moderate; > .70 easy. For polytomous items p = (mean &minus; min) / (max &minus; min).
+* **Recommendation** is based on discrimination; "Raises Alpha" marks items whose removal would increase Cronbach's alpha.
+</details>
+
+```{r scatter, eval=ok, fig.height=4.2, fig.width=7}
+d <- ev
+ggplot(d, aes(Difficulty, Discrimination, colour = Recommendation, label = Item)) +
+  annotate("rect", xmin = .30, xmax = .70, ymin = -Inf, ymax = Inf, fill = "#198754", alpha = .07) +
+  geom_hline(yintercept = c(.20, .30), linetype = "dashed", colour = "grey55") +
+  geom_point(size = 3) +
+  geom_text(vjust = -1, size = 3, show.legend = FALSE, check_overlap = TRUE) +
+  scale_colour_manual(values = c("Retain" = "#198754", "Revise" = "#e0a800", "Eliminate / revise" = "#dc3545")) +
+  scale_x_continuous(labels = ax, limits = c(0, 1)) + scale_y_continuous(labels = ax) +
+  labs(x = "Difficulty (p)", y = "Discrimination (item-total r)",
+       subtitle = "Shaded band: p = .30–.70; dashed lines: r = .20 and .30") +
+  theme_minimal() + theme(legend.position = "bottom")
+```
+
+```{r distractors, results='asis', eval=ok && !is.null(res$distractor)}
+cat("# Distractor Analysis\n\n")
+cat("<p class='note'>Option chosen by < 5% of examinees = non-functioning; an option with a positive option-total correlation needs review (Haladyna and Downing, 1993). The key is marked with *.</p>\n")
+issues <- lapply(names(res$distractor), function(it) {
+  df <- res$distractor[[it]]
+  dis <- df[df$correct != "*", , drop = FALSE]
+  data.frame(Item = it,
+             `Non-functioning` = paste(rownames(dis)[dis$rspP < .05], collapse = ", "),
+             `Positive option-total r` = paste(rownames(dis)[!is.na(dis$pBis) & dis$pBis > 0], collapse = ", "),
+             check.names = FALSE, stringsAsFactors = FALSE)
+})
+issues <- do.call(rbind, issues)
+flag <- issues[issues$`Non-functioning` != "" | issues$`Positive option-total r` != "", , drop = FALSE]
+if (nrow(flag) == 0) {
+  cat("<div class='callout ok'>All distractors are functioning.</div>\n")
 } else {
-  cat("No CTT results available.")
+  cat(kable(flag, format = "html", row.names = FALSE) %>%
+        kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE))
 }
+cat("\n<details><summary>Full distractor tables (all items)</summary>\n")
+for (it in names(res$distractor)) {
+  df <- res$distractor[[it]]
+  out <- cbind(Option = rownames(df), df)
+  num <- vapply(out, is.numeric, logical(1)); num[c("n")] <- FALSE
+  out[num] <- lapply(out[num], fmt)
+  cat(sprintf("<h4>%s</h4>", it))
+  cat(kable(out, format = "html", row.names = FALSE) %>%
+        kable_styling(bootstrap_options = c("striped", "condensed"), full_width = FALSE, font_size = 12) %>%
+        row_spec(which(df$correct == "*"), background = "#d4edda", bold = TRUE))
+}
+cat("</details>\n")
 ```
 
-## Item Analysis
+# Score Distribution
 
-```{r}
-if(!is.null(res)){
-  item_rep <- res$itemReport
-  kable(item_rep, format = "html", digits = 3) %>% 
-    kable_styling(bootstrap_options = c("striped", "hover"), full_width = TRUE)
-}
+```{r hist, eval=ok, fig.height=3.6, fig.width=7}
+sc <- res$score
+ggplot(data.frame(Score = sc), aes(Score)) +
+  geom_histogram(bins = max(5, min(30, diff(range(sc, na.rm = TRUE)) + 1)),
+                 fill = "#0d6efd", color = "white", alpha = .85) +
+  geom_vline(xintercept = mean(sc, na.rm = TRUE), colour = "#dc3545", linetype = "dashed") +
+  scale_x_continuous(labels = ax) + scale_y_continuous(labels = ax) +
+  labs(x = "Total score", y = "Frequency", subtitle = "Dashed line: mean") + theme_minimal()
 ```
+
+```{r desc, eval=ok}
+dd <- res$desc
+dd$Value <- ifelse(dd$Statistic == "N", as.character(dd$Value), fmt(dd$Value))
+kable(dd, format = "html", row.names = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+# Person Scores with SEM Band
+
+```{r person, eval=ok}
+ps <- res$person
+n_show <- min(20, nrow(ps))
+out <- data.frame(
+  Respondent = seq_len(n_show),
+  Score = fmt(ps$Score, 2),
+  `95% band` = paste0(fmt(ps$Lower[1:n_show], 2), " – ", fmt(ps$Upper[1:n_show], 2)),
+  `Estimated true score` = fmt(ps$True_Score[1:n_show], 2),
+  `True score 95% band` = paste0(fmt(ps$True_Lower[1:n_show], 2), " – ", fmt(ps$True_Upper[1:n_show], 2)),
+  check.names = FALSE, stringsAsFactors = FALSE
+)
+kable(out, format = "html", row.names = FALSE) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+```
+
+<p class="note">First `r if (ok) min(20, nrow(res$person)) else 0` of `r if (ok) nrow(res$person) else 0` examinees; export the full table from the app. Observed band = X &plusmn; 1.96 &times; SEM (Crocker and Algina, 1986). Estimated true score (Kelley, 1923): T&#770; = &alpha;(X &minus; M) + M, with band T&#770; &plusmn; 1.96 &times; SD &times; &radic;(&alpha;(1 &minus; &alpha;)).</p>
 
 ```{r ai-summary, results='asis'}
-if (!is.null(params$ai_summary) && params$ai_summary != "") {
-  cat("## AI Interpretive Summary\n\n")
-  cat("<div style='background-color: #f0f7fb; border-left: 4px solid #3498db; padding: 15px; border-radius: 4px; margin-bottom: 25px;'>\n")
+if (!is.null(params$ai_summary) && !identical(params$ai_summary, "") && !is.na(params$ai_summary)) {
+  cat("# AI Interpretive Summary\n\n")
+  cat("<div class='callout'>\n")
   cat(params$ai_summary)
   cat("\n</div>\n\n")
 }
 ```
 
-## R Console Output
+# R Console Output
 
-<div style="font-family: Consolas, 'Courier New', monospace; font-size: 10px; white-space: pre-wrap; background-color: #f8f9fa; padding: 10px; border: 1px solid #ccc; border-radius: 4px; line-height: 1.2;">
-`r params$console_out`
-</div>
+```{r console, results='asis'}
+txt <- if (is.null(params$console_out) || all(is.na(params$console_out))) "" else params$console_out
+cat("<pre class='console'>", htmltools::htmlEscape(txt), "</pre>")
+```
 
-## References
+# References
 
-* Djidu, H. (2026). measureR: Tools for Educational and Psychological Measurement. R package. Available at: https://github.com/hdmeasure/measureR
-* Djidu, H. (2026). *measureR: Tools for educational and psychological measurement*. https://doi.org/10.32614/CRAN.package.measureR. R package.
-* Lord, F. M., & Novick, M. R. (1968). *Statistical theories of mental test scores*. Addison-Wesley.
+* Allen, M. J., & Yen, W. M. (1979). *Introduction to measurement theory*. Brooks/Cole.
+* Crocker, L., & Algina, J. (1986). *Introduction to classical and modern test theory*. Holt, Rinehart & Winston.
+* Ebel, R. L., & Frisbie, D. A. (1991). *Essentials of educational measurement* (5th ed.). Prentice Hall.
+* George, D., & Mallery, P. (2003). *SPSS for Windows step by step* (4th ed.). Allyn & Bacon.
+* Haladyna, T. M., & Downing, S. M. (1993). How many options is enough for a multiple-choice test item? *Educational and Psychological Measurement, 53*(4), 999&ndash;1010.
+* Kelley, T. L. (1923). *Statistical method*. Macmillan.
+* Nunnally, J. C., & Bernstein, I. H. (1994). *Psychometric theory* (3rd ed.). McGraw-Hill.
+* Willse, J. T. (2018). *CTT: Classical test theory functions*. R package.
+* Djidu, H. (2026). *measureR: Tools for educational and psychological measurement*. https://github.com/hdmeasure/measureR
 
 ***
 *Generated by measureR*
